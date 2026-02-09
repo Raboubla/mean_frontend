@@ -1,6 +1,4 @@
-
-// src/environments/environment.ts
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:5000/api' // Ton URL de base
+    apiUrl: 'http://localhost:5000/api' // url for the api
 };
