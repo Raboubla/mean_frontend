@@ -26,6 +26,19 @@ export class AuthService {
       })
     );
   }
+
+  // // Connexion sécurisée
+  // login(credentials: any): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
+  //     tap((response: any) => {
+  //       // On vérifie que la réponse et l'utilisateur existent bien
+  //       if (response && response.token && response.user) {
+  //         this.saveToken(response.token);
+  //         this.saveRole(response.user.role);
+  //       }
+  //     })
+  //   );
+  // }
   // Gestion du stockage local
   private saveToken(token: string) {
     localStorage.setItem('token', token);

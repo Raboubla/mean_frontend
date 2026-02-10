@@ -7,20 +7,22 @@
             <p>Login raboubla/stephan</p>
           </div>
 
-          <form class="m-t-30">
-            <mat-label class="mat-subtitle-2 f-s-14 f-w-600 m-b-12 d-block">Email Adddress</mat-label>
+          <form class="m-t-30" [formGroup]="form" (ngSubmit)="submit()">
+
+            <mat-label class="mat-subtitle-2 f-s-14 f-w-600 m-b-12 d-block">Email Address</mat-label>
             <mat-form-field appearance="outline" class="w-100" color="primary">
-              <input matInput type="email" />
+              <input matInput type="email" formControlName="email" />
             </mat-form-field>
-            <!-- password -->
+
             <mat-label class="mat-subtitle-2 f-s-14 f-w-600 m-b-12 d-block">Password</mat-label>
             <mat-form-field appearance="outline" class="w-100" color="primary">
-              <input matInput type="password" />
+              <input matInput type="password" formControlName="password" />
             </mat-form-field>
-            <a [routerLink]="['/']" mat-flat-button color="primary" class="w-100">
+
+            <button type="submit" mat-flat-button color="primary" class="w-100" [disabled]="form.invalid">
               Sign In
-            </a>
-            <!-- input -->
+            </button>
+
           </form>
           <span class="d-block f-w-500 text-center m-t-24">New to Matdash?
             <a [routerLink]="['/authentication/register']" class="text-decoration-none text-primary f-w-500 f-s-14">
