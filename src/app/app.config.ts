@@ -21,6 +21,8 @@ import { provideClientHydration } from '@angular/platform-browser';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import * as TablerIcons from 'angular-tabler-icons/icons';
 
+
+
 // perfect scrollbar
 import { NgScrollbarModule } from 'ngx-scrollbar';
 //Import all material modules
