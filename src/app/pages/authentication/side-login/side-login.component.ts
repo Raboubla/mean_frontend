@@ -3,7 +3,7 @@ import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } 
 import { Router, RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../material.module';
 import { MatButtonModule } from '@angular/material/button';
-import { AuthService } from '../../../services/auth.service'; // <--- Importe ton service
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-side-login',

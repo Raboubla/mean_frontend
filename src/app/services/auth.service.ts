@@ -2,44 +2,37 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  // L'URL vient de l'environnement
+  // the url on environment
   private apiUrl = `${environment.apiUrl}/auth`;
 
   constructor(private http: HttpClient) { }
-  // Inscription
+  // sign up
   register(userData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, userData);
   }
-  // Connexion
+
+
+  // sign in
   login(credentials: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
       tap((response: any) => {
         if (response.token) {
+          // On décode le token pour récupérer les infos (email, role, id, etc.)
+          const decodedToken: any = jwtDecode(response.token);
           this.saveToken(response.token);
-          this.saveRole(response.user.role);
+          this.saveRole(response.role);
+          this.saveId(decodedToken.id);
         }
       })
     );
   }
 
-  // // Connexion sécurisée
-  // login(credentials: any): Observable<any> {
-  //   return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
-  //     tap((response: any) => {
-  //       // On vérifie que la réponse et l'utilisateur existent bien
-  //       if (response && response.token && response.user) {
-  //         this.saveToken(response.token);
-  //         this.saveRole(response.user.role);
-  //       }
-  //     })
-  //   );
-  // }
-  // Gestion du stockage local
   private saveToken(token: string) {
     localStorage.setItem('token', token);
   }
@@ -48,6 +41,9 @@ export class AuthService {
     localStorage.setItem('role', role);
   }
 
+  private saveId(id: string) {
+    localStorage.setItem('id', id);
+  }
   getToken() {
     return localStorage.getItem('token');
   }
