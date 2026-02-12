@@ -10,6 +10,11 @@ export const navItems: NavItem[] = [
     route: '/dashboard',
   },
   {
+    displayName: 'Users',
+    iconName: 'solar:users-group-rounded-line-duotone',
+    route: '/users',
+  },
+  {
     navCap: 'Ui Components',
     divider: true
   },
