@@ -1,0 +1,92 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+        <div class="row justify-content-between">
+            <div class="col-lg-4">
+                <mat-form-field appearance="outline" class="w-100 hide-hint">
+                    <mat-label>Search Users</mat-label>
+                    <input matInput (keyup)="applyFilter($event)" placeholder="Filter by email">
+                    <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+            </div>
+            <div class="col-lg-4 d-flex justify-content-end align-items-center">
+                <button mat-flat-button color="primary" (click)="openDialog('Add', {})">Add User</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table mat-table [dataSource]="dataSource" matSort class="w-100">
+
+                <!-- Email Column -->
+                <ng-container matColumnDef="email">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14"> Email
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <div class="d-flex align-items-center">
+                            <div class="m-l-16">
+                                <h6 class="mat-subtitle-1 f-s-14 f-w-600">{{element.email}}</h6>
+                            </div>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Role Column -->
+                <ng-container matColumnDef="role">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14"> Role
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <span
+                            class="bg-light-primary text-primary rounded f-w-600 p-6 p-y-4 f-s-12">{{element.role}}</span>
+                    </td>
+                </ng-container>
+
+                <!-- Shop Column -->
+                <ng-container matColumnDef="shop">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14"> Shop
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        {{element.shop ? element.shop.name : (element.shopId || '-')}}
+                    </td>
+                </ng-container>
+
+                <!-- Status Column -->
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14"> Status
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <span [ngClass]="{
+                    'bg-light-success text-success': element.status === 'ACTIVE',
+                    'bg-light-error text-error': element.status === 'INACTIVE' || element.status === 'BANNED',
+                    'bg-light-warning text-warning': element.status === 'PENDING'
+                }" class="rounded f-w-600 p-6 p-y-4 f-s-12">
+                            {{element.status}}
+                        </span>
+                    </td>
+                </ng-container>
+
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14"> Actions </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <button mat-icon-button color="accent" (click)="openDialog('Update', element)"
+                            matTooltip="Edit">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deleteUser(element)" matTooltip="Delete">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="toggleStatus(element)" matTooltip="Toggle Status">
+                            <mat-icon>{{element.status === 'ACTIVE' ? 'block' : 'check_circle'}}</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
+                aria-label="Select page of users"></mat-paginator>
+        </div>
+    </mat-card-content>
+</mat-card>

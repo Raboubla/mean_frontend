@@ -31,6 +31,13 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
       },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./pages/users/user-list/user-list.component').then(
+            (m) => m.AppUserComponent
+          ),
+      },
     ],
   },
   {
