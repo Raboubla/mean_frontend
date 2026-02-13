@@ -15,6 +15,16 @@ export const navItems: NavItem[] = [
     route: '/users',
   },
   {
+    displayName: 'Shops',
+    iconName: 'solar:shop-2-line-duotone',
+    route: '/shops',
+  },
+  {
+    displayName: 'Products',
+    iconName: 'solar:box-minimalistic-line-duotone',
+    route: '/products',
+  },
+  {
     navCap: 'Ui Components',
     divider: true
   },
