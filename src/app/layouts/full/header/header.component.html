@@ -8,15 +8,24 @@
   <!-- --------------------------------------------------------------- -->
   <!-- Notification Dropdown -->
   <!-- --------------------------------------------------------------- -->
-  <button mat-mini-fab color="inherit" aria-label="Notifications" class="d-flex justify-content-center">
-    <span matBadge="1" matBadgeOverlap="false" matBadgeSize="small">
-      <i class="iconify icon-20 d-flex" data-icon="solar:bell-line-duotone"></i>
+  <div class="d-flex align-items-center">
+    <button mat-mini-fab color="inherit" aria-label="Notifications" class="d-flex justify-content-center"
+      (click)="triggerNotif()">
+      <span matBadge="1" matBadgeOverlap="false" matBadgeSize="small">
+        <i class="iconify icon-20 d-flex" data-icon="solar:bell-line-duotone"></i>
+      </span>
+    </button>
+
+    @if (showNotifMessage) {
+    <span class="m-l-8 f-s-12 text-warn f-w-600 animate-fade-in">
+      Not available now
     </span>
-  </button>
+    }
+  </div>
 
   <span class="flex-1-auto"></span>
 
-  <a href="#" target="_blank" mat-flat-button color="primary">Free</a>
+
 
   <!-- --------------------------------------------------------------- -->
   <!-- profile Dropdown -->
@@ -33,10 +42,6 @@
     <button mat-menu-item>
       <mat-icon class="d-flex align-items-center"><i data-icon="solar:user-id-line-duotone"
           class="iconify icon-22"></i></mat-icon>My Account
-    </button>
-    <button mat-menu-item>
-      <mat-icon class="d-flex align-items-center"><i data-icon="solar:checklist-minimalistic-line-duotone"
-          class="iconify icon-22"></i> </mat-icon>My Task
     </button>
 
     <div class="p-x-12 m-t-12">

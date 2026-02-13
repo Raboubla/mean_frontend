@@ -38,6 +38,20 @@ export const routes: Routes = [
             (m) => m.AppUserComponent
           ),
       },
+      {
+        path: 'shops',
+        loadComponent: () =>
+          import('./pages/shops/shop-list/shop-list.component').then(
+            (m) => m.AppShopComponent
+          ),
+      },
+      {
+        path: 'products',
+        loadComponent: () =>
+          import('./pages/products/product-list/product-list.component').then(
+            (m) => m.AppProductComponent
+          ),
+      },
     ],
   },
   {

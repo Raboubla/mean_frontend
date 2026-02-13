@@ -2,6 +2,7 @@ import { Component, Inject, Optional } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { UserService } from '../../../services/user-services/user.service';
+import { ShopService } from '../../../services/shop-services/shop.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -33,11 +34,14 @@ export class AppUserDialogComponent {
     permissionsList = ['CASHIER', 'MASCOT', 'SELLER', 'RECEPTIONIST', 'ADMIN'];
     statusList = ['ACTIVE', 'INACTIVE', 'BANNED', 'PENDING'];
 
+    shops: any[] = [];
+
     constructor(
         public dialogRef: MatDialogRef<AppUserDialogComponent>,
         @Optional() @Inject(MAT_DIALOG_DATA) public data: any,
         private fb: FormBuilder,
-        private userService: UserService
+        private userService: UserService,
+        private shopService: ShopService
     ) {
         this.local_data = { ...data };
         this.action = this.local_data.action;
@@ -55,15 +59,33 @@ export class AppUserDialogComponent {
         if (this.action === 'Add') {
             this.userForm.get('password')?.setValidators([Validators.required]);
         }
+
+        this.getShops();
     }
+
+    getShops() {
+        this.shopService.getAllShops().subscribe({
+            next: (res: any) => {
+                this.shops = res.shops;
+            },
+            error: (err) => console.error('Error fetching shops', err)
+        });
+    }
+
+    errorMessage: string = '';
 
     doAction() {
         if (this.userForm.valid) {
             const userData = this.userForm.value;
+            this.errorMessage = ''; // Clear previous errors
+
             if (this.action === 'Add') {
                 this.userService.createUser(userData).subscribe({
                     next: () => this.dialogRef.close({ event: this.action, data: userData }),
-                    error: (err) => console.error('Error creating user', err)
+                    error: (err) => {
+                        console.error('Error creating user', err);
+                        this.errorMessage = err.error?.message || 'An error occurred while creating the user.';
+                    }
                 });
             } else {
                 // For update, we might not want to send password if it's empty
@@ -72,7 +94,10 @@ export class AppUserDialogComponent {
                 }
                 this.userService.updateUser(userData._id, userData).subscribe({
                     next: () => this.dialogRef.close({ event: this.action, data: userData }),
-                    error: (err) => console.error('Error updating user', err)
+                    error: (err) => {
+                        console.error('Error updating user', err);
+                        this.errorMessage = err.error?.message || 'An error occurred while updating the user.';
+                    }
                 });
             }
         }
