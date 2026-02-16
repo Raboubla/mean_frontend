@@ -1,0 +1,71 @@
+<h2 mat-dialog-title>{{ action }} Review</h2>
+<mat-dialog-content class="mat-typography">
+    <form [formGroup]="reviewForm">
+        <div *ngIf="errorMessage" class="bg-light-error text-error p-8 m-b-16 rounded f-s-14">
+            {{ errorMessage }}
+        </div>
+        <div class="row">
+            <!-- Customer Name -->
+            <div class="col-lg-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Customer Name</mat-label>
+                    <input matInput formControlName="customer_name" placeholder="John Doe" />
+                    <mat-error *ngIf="reviewForm.get('customer_name')?.hasError('required')">Name is
+                        required</mat-error>
+                </mat-form-field>
+            </div>
+
+            <!-- Rating -->
+            <div class="col-lg-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Rating (1-5)</mat-label>
+                    <mat-select formControlName="rating">
+                        <mat-option [value]="1">1 Star</mat-option>
+                        <mat-option [value]="2">2 Stars</mat-option>
+                        <mat-option [value]="3">3 Stars</mat-option>
+                        <mat-option [value]="4">4 Stars</mat-option>
+                        <mat-option [value]="5">5 Stars</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="reviewForm.get('rating')?.hasError('required')">Rating is required</mat-error>
+                </mat-form-field>
+            </div>
+
+            <!-- Shop -->
+            <div class="col-lg-12">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Shop</mat-label>
+                    <mat-select formControlName="shop">
+                        <mat-option *ngFor="let shop of shops" [value]="shop._id">{{ shop.name }}</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="reviewForm.get('shop')?.hasError('required')">Shop is required</mat-error>
+                </mat-form-field>
+            </div>
+
+            <!-- Status -->
+            <div class="col-lg-12" *ngIf="action === 'Update'">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Status</mat-label>
+                    <mat-select formControlName="status">
+                        <mat-option value="PENDING">Pending</mat-option>
+                        <mat-option value="APPROVED">Approved</mat-option>
+                        <mat-option value="REJECTED">Rejected</mat-option>
+                        <mat-option value="SPAM">Spam</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <!-- Comment -->
+            <div class="col-lg-12">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Comment</mat-label>
+                    <textarea matInput formControlName="comment" rows="3"></textarea>
+                </mat-form-field>
+            </div>
+
+        </div>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="closeDialog()">Cancel</button>
+    <button mat-flat-button color="primary" [disabled]="!reviewForm.valid" (click)="doAction()">{{ action }}</button>
+</mat-dialog-actions>

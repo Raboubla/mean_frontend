@@ -52,6 +52,27 @@ export const routes: Routes = [
             (m) => m.AppProductComponent
           ),
       },
+      {
+        path: 'sales',
+        loadComponent: () =>
+          import('./pages/sales/sale-list/sale-list.component').then(
+            (m) => m.AppSaleComponent
+          ),
+      },
+      {
+        path: 'reviews',
+        loadComponent: () =>
+          import('./pages/reviews/review-list/review-list.component').then(
+            (m) => m.AppReviewComponent
+          ),
+      },
+      {
+        path: 'communications',
+        loadComponent: () =>
+          import('./pages/communications/communication-list/communication-list.component').then(
+            (m) => m.AppCommunicationComponent
+          ),
+      },
     ],
   },
   {
