@@ -1,0 +1,13 @@
+{
+  "_id": "1",
+  "name": "Mock Boutique",
+  "category": ["FASHION", "BEAUTY"],
+  "description": "A mock shop for testing",
+  "status": "OPEN",
+  "floor": 1,
+  "view_count": 100,
+  "opening_hours": [
+    { "day": "MONDAY", "open": "09:00", "close": "18:00" },
+    { "day": "TUESDAY", "open": "09:00", "close": "18:00" }
+  ]
+}

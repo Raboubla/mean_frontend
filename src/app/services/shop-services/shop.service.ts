@@ -85,4 +85,10 @@ export class ShopService {
   getShopsOpenNow(): Observable<Shop[]> {
     return this.http.get<Shop[]>(`${this.apiUrl}/filter/open-now`);
   }
+
+  // In ShopService class
+  getMyShop(): Observable<Shop | null> {
+    return this.http.get<Shop | null>(`${this.apiUrl}/my`);
+  }
+
 }

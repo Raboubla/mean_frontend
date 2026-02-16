@@ -1,0 +1,57 @@
+<h2>My Shop Dashboard</h2>
+<form [formGroup]="shopForm">
+  <div *ngIf="errorMessage" class="bg-light-error text-error p-8 m-b-16 rounded f-s-14">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Name -->
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Shop Name</mat-label>
+    <input matInput formControlName="name" placeholder="Name" />
+    <mat-error *ngIf="shopForm.get('name')?.hasError('required')">Name is required</mat-error>
+  </mat-form-field>
+
+  <!-- Floor -->
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Floor</mat-label>
+    <input matInput type="number" formControlName="floor" placeholder="Floor number" />
+    <mat-error *ngIf="shopForm.get('floor')?.hasError('required')">Floor is required</mat-error>
+  </mat-form-field>
+
+  <!-- Categories -->
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Categories</mat-label>
+    <mat-select formControlName="category" multiple>
+      <mat-option *ngFor="let cat of categories" [value]="cat">{{ cat }}</mat-option>
+    </mat-select>
+    <mat-error *ngIf="shopForm.get('category')?.hasError('required')">At least one category required</mat-error>
+  </mat-form-field>
+
+  <!-- Status -->
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Status</mat-label>
+    <mat-select formControlName="status">
+      <mat-option *ngFor="let status of statusList" [value]="status">{{ status }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Description -->
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Description</mat-label>
+    <textarea matInput formControlName="description" rows="3"></textarea>
+  </mat-form-field>
+
+  <!-- Opening Hours -->
+  <h3>Opening Hours</h3>
+  <div formArrayName="opening_hours">
+    <div *ngFor="let hour of openingHours.controls; let i=index" [formGroupName]="i">
+      <mat-checkbox formControlName="selected">{{ hour.get('day')?.value | titlecase }}</mat-checkbox>
+      <input matInput type="time" formControlName="open" [disabled]="!hour.get('selected')?.value">
+      <input matInput type="time" formControlName="close" [disabled]="!hour.get('selected')?.value">
+    </div>
+  </div>
+
+  <button mat-flat-button color="primary" (click)="submitForm()" [disabled]="!shopForm.valid">
+    {{ shop ? 'Update Shop' : 'Create Shop' }}
+  </button>
+</form>
