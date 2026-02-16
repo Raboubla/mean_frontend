@@ -1,0 +1,104 @@
+<h2 mat-dialog-title>{{ action }} Communication</h2>
+<mat-dialog-content class="mat-typography">
+    <form [formGroup]="commForm">
+        <div *ngIf="errorMessage" class="bg-light-error text-error p-8 m-b-16 rounded f-s-14">
+            {{ errorMessage }}
+        </div>
+        <div class="row">
+            <!-- Title -->
+            <div class="col-lg-12">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Title</mat-label>
+                    <input matInput formControlName="title" placeholder="Title" />
+                    <mat-error *ngIf="commForm.get('title')?.hasError('required')">Title is required</mat-error>
+                </mat-form-field>
+            </div>
+
+            <!-- Type -->
+            <div class="col-lg-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Type</mat-label>
+                    <mat-select formControlName="type">
+                        <mat-option value="ANNOUNCEMENT">Announcement</mat-option>
+                        <mat-option value="EVENT">Event</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="commForm.get('type')?.hasError('required')">Type is required</mat-error>
+                </mat-form-field>
+            </div>
+
+            <!-- Target -->
+            <div class="col-lg-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Target Audience</mat-label>
+                    <mat-select formControlName="target">
+                        <mat-option value="ALL">All Users</mat-option>
+                        <mat-option value="BUYERS">Buyers Only</mat-option>
+                        <mat-option value="SHOP_ADMINS">Shop Admins Only</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="commForm.get('target')?.hasError('required')">Target is required</mat-error>
+                </mat-form-field>
+            </div>
+
+            <!-- Dates -->
+            <div class="col-lg-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Start Date</mat-label>
+                    <input matInput [matDatepicker]="startPicker" formControlName="start_date">
+                    <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #startPicker></mat-datepicker>
+                    <mat-error *ngIf="commForm.get('start_date')?.hasError('required')">Start Date is
+                        required</mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-lg-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>End Date</mat-label>
+                    <input matInput [matDatepicker]="endPicker" formControlName="end_date">
+                    <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #endPicker></mat-datepicker>
+                    <mat-error *ngIf="commForm.get('end_date')?.hasError('required')">End Date is required</mat-error>
+                </mat-form-field>
+            </div>
+
+            <!-- Content -->
+            <div class="col-lg-12">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Content</mat-label>
+                    <textarea matInput formControlName="content" rows="4"></textarea>
+                    <mat-error *ngIf="commForm.get('content')?.hasError('required')">Content is required</mat-error>
+                </mat-form-field>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="col-lg-12">
+                <mat-label class="f-w-600 m-b-8 d-block">Image (Optional)</mat-label>
+                <div class="d-flex align-items-center gap-16">
+                    <button mat-stroked-button color="primary" (click)="fileInput.click()">
+                        <mat-icon>upload_file</mat-icon> Choose File
+                    </button>
+                    <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*"
+                        style="display: none;">
+                    <span class="f-s-14 text-muted" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+                    <span class="f-s-14 text-muted" *ngIf="!selectedFile && local_data.image_url">Current: {{
+                        local_data.image_url }}</span>
+                </div>
+            </div>
+
+            <!-- Shop (Optional) -->
+            <div class="col-lg-12">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Associated Shop (Optional)</mat-label>
+                    <mat-select formControlName="shop">
+                        <mat-option value="">None</mat-option>
+                        <mat-option *ngFor="let shop of shops" [value]="shop._id">{{ shop.name }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+        </div>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="closeDialog()">Cancel</button>
+    <button mat-flat-button color="primary" [disabled]="!commForm.valid" (click)="doAction()">{{ action }}</button>
+</mat-dialog-actions>

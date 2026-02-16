@@ -25,6 +25,21 @@ export const navItems: NavItem[] = [
     route: '/products',
   },
   {
+    displayName: 'Sales',
+    iconName: 'solar:bill-list-line-duotone',
+    route: '/sales',
+  },
+  {
+    displayName: 'Reviews',
+    iconName: 'solar:star-fall-message-line-duotone', // Or star-line-duotone
+    route: '/reviews',
+  },
+  {
+    displayName: 'Communications',
+    iconName: 'solar:megaphone-line-duotone',
+    route: '/communications',
+  },
+  {
     navCap: 'Ui Components',
     divider: true
   },
