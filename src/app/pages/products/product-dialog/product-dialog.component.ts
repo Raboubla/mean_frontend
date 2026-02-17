@@ -9,10 +9,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CommonModule } from '@angular/common';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
 
 @Component({
     selector: 'app-product-dialog',
     standalone: true,
+    providers: [provideNativeDateAdapter()],
     imports: [
         CommonModule,
         ReactiveFormsModule,
@@ -22,7 +25,9 @@ import { CommonModule } from '@angular/common';
         MatSelectModule,
         MatButtonModule,
         MatDialogModule,
-        MatCheckboxModule
+        MatCheckboxModule,
+        MatDatepickerModule,
+        MatNativeDateModule
     ],
     templateUrl: './product-dialog.component.html',
 })
@@ -45,6 +50,9 @@ export class AppProductDialogComponent implements OnInit {
         this.local_data = { ...data };
         this.action = this.local_data.action;
 
+        // Ensure promotion object exists to avoid null errors if it's missing in local_data
+        const promotion = this.local_data.promotion || {};
+
         this.productForm = this.fb.group({
             _id: [this.local_data._id],
             name: [this.local_data.name || '', Validators.required],
@@ -53,18 +61,72 @@ export class AppProductDialogComponent implements OnInit {
             category: [this.local_data.category || 'OTHER', Validators.required],
             status: [this.local_data.status || 'AVAILABLE', Validators.required],
             shop: [this.local_data.shop?._id || this.local_data.shop || '', Validators.required],
-            is_active: [this.local_data.is_active !== undefined ? this.local_data.is_active : true]
+            is_active: [this.local_data.is_active !== undefined ? this.local_data.is_active : true],
+            // Promotion fields
+            promo_discount_percent: [promotion.discount_percent || 0, [Validators.min(0), Validators.max(100)]],
+            promo_price: [this.getDecimalValue(promotion.promo_price) || null],
+            promo_end_date: [promotion.end_date || null]
         });
+
+        this.setupPromotionLogic();
+    }
+
+    // Helper to extract decimal value if it comes as { $numberDecimal: "..." }
+    getDecimalValue(val: any): number | null {
+        if (val && val.$numberDecimal) {
+            return parseFloat(val.$numberDecimal);
+        }
+        return val ? Number(val) : null;
     }
 
     ngOnInit(): void {
         this.getShops();
     }
 
+    setupPromotionLogic() {
+        const priceControl = this.productForm.get('price');
+        const discountControl = this.productForm.get('promo_discount_percent');
+        const promoPriceControl = this.productForm.get('promo_price');
+
+        if (!priceControl || !discountControl || !promoPriceControl) return;
+
+        // When discount % changes -> calculate promo price
+        discountControl.valueChanges.subscribe(discount => {
+            if (discountControl.dirty || discountControl.touched) {
+                const price = priceControl.value;
+                if (price && discount >= 0 && discount <= 100) {
+                    const newPromoPrice = price - (price * (discount / 100));
+                    promoPriceControl.setValue(Number(newPromoPrice.toFixed(2)), { emitEvent: false });
+                } else if (!discount) {
+                    promoPriceControl.setValue(null, { emitEvent: false });
+                }
+            }
+        });
+
+        // When promo price changes -> calculate discount %
+        promoPriceControl.valueChanges.subscribe(promoPrice => {
+            if (promoPriceControl.dirty || promoPriceControl.touched) {
+                const price = priceControl.value;
+                if (price && promoPrice !== null && promoPrice >= 0 && promoPrice <= price) {
+                    const discount = ((price - promoPrice) / price) * 100;
+                    discountControl.setValue(Number(discount.toFixed(2)), { emitEvent: false });
+                }
+            }
+        });
+
+        // When base price changes -> recalculate promo price based on existing discount
+        priceControl.valueChanges.subscribe(price => {
+            const discount = discountControl.value;
+            if (price && discount) {
+                const newPromoPrice = price - (price * (discount / 100));
+                promoPriceControl.setValue(Number(newPromoPrice.toFixed(2)), { emitEvent: false });
+            }
+        });
+    }
+
     getShops() {
         this.shopService.getAllShops().subscribe({
             next: (res: any) => {
-                // Handle if response is array or object with array
                 this.shops = Array.isArray(res) ? res : (res.shops || []);
             },
             error: (err) => console.error('Error fetching shops', err)
@@ -73,8 +135,28 @@ export class AppProductDialogComponent implements OnInit {
 
     doAction() {
         if (this.productForm.valid) {
-            const productData = this.productForm.value;
+            const formValue = this.productForm.value;
             this.errorMessage = '';
+
+            // Construct payload matching backend structure
+            const productData = {
+                ...formValue,
+                promotion: {
+                    discount_percent: formValue.promo_discount_percent,
+                    promo_price: formValue.promo_price,
+                    end_date: formValue.promo_end_date
+                }
+            };
+
+            // Clean up temporary flat fields
+            delete productData.promo_discount_percent;
+            delete productData.promo_price;
+            delete productData.promo_end_date;
+
+            // Remove promotion if no discount/price set
+            if (!productData.promotion.discount_percent && !productData.promotion.promo_price) {
+                delete productData.promotion;
+            }
 
             if (this.action === 'Add') {
                 this.productService.createProduct(productData).subscribe({

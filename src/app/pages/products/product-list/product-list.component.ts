@@ -81,6 +81,33 @@ export class AppProductComponent implements OnInit {
         return Number(price);
     }
 
+    isPromotionActive(product: any): boolean {
+        if (!product.promotion) return false;
+
+        const promo = product.promotion;
+        const now = new Date();
+        const endDate = promo.end_date ? new Date(promo.end_date) : null;
+
+        // Active if:
+        // 1. Has discount or promo price
+        // 2. End date is not set OR end date is in the future
+        const hasDiscount = (promo.discount_percent && promo.discount_percent > 0) || (promo.promo_price && promo.promo_price < product.price);
+        const isNotExpired = !endDate || endDate > now;
+
+        return hasDiscount && isNotExpired;
+    }
+
+    getPromoPrice(product: any): number {
+        if (!this.isPromotionActive(product)) return product.price;
+        // If promo_price is explicitly set, use it. Otherwise calculate from discount.
+        // Note: backend usually handles this, but here we prioritize what's available.
+        if (product.promotion.promo_price) {
+            return this.formatPrice(product.promotion.promo_price);
+        }
+        return product.price; // Fallback
+    }
+
+
     onPageChange(event: PageEvent) {
         this.pageIndex = event.pageIndex;
         this.pageSize = event.pageSize;
