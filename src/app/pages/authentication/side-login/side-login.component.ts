@@ -29,7 +29,7 @@ export class AppSideLoginComponent {
         next: (res) => {
           console.log('Login réussi !', res);
           // Le token est déjà sauvegardé par le "tap" dans ton service
-          this.router.navigate(['/dashboard']); // Redirige vers ta page d'accueil
+          this.router.navigate(['/admin/dashboard']); // Redirige vers ta page d'accueil
         },
         error: (err) => {
           console.error('Erreur de login', err);

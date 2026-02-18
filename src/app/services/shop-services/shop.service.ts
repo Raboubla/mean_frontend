@@ -18,6 +18,7 @@ export interface Shop {
   floor: number;
   view_count: number;
   opening_hours: OpeningHour[];
+  banner_url?: string;
 }
 
 @Injectable({
