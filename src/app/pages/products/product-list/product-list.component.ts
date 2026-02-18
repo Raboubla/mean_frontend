@@ -116,19 +116,9 @@ export class AppProductComponent implements OnInit {
 
     applyFilter(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
-
-        if (filterValue) {
-            this.productService.searchProducts(filterValue).subscribe({
-                next: (products) => {
-                    this.dataSource.data = products.map(p => ({
-                        ...p,
-                        price: this.formatPrice(p.price)
-                    }));
-                    this.totalProducts = products.length; // Approximate
-                }
-            });
-        } else {
-            this.loadProducts();
+        this.dataSource.filter = filterValue.trim().toLowerCase();
+        if (this.dataSource.paginator) {
+            this.dataSource.paginator.firstPage();
         }
     }
 
