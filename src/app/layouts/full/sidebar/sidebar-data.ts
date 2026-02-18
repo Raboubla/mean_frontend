@@ -7,37 +7,37 @@ export const navItems: NavItem[] = [
   {
     displayName: 'Dashboard',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/dashboard',
+    route: '/admin/dashboard',
   },
   {
     displayName: 'Users',
     iconName: 'solar:users-group-rounded-line-duotone',
-    route: '/users',
+    route: '/admin/users',
   },
   {
     displayName: 'Shops',
     iconName: 'solar:shop-2-line-duotone',
-    route: '/shops',
+    route: '/admin/shops',
   },
   {
     displayName: 'Products',
     iconName: 'solar:box-minimalistic-line-duotone',
-    route: '/products',
+    route: '/admin/products',
   },
   {
     displayName: 'Sales',
     iconName: 'solar:bill-list-line-duotone',
-    route: '/sales',
+    route: '/admin/sales',
   },
   {
     displayName: 'Reviews',
     iconName: 'solar:star-fall-message-line-duotone', // Or star-line-duotone
-    route: '/reviews',
+    route: '/admin/reviews',
   },
   {
     displayName: 'Communications',
     iconName: 'solar:megaphone-line-duotone',
-    route: '/communications',
+    route: '/admin/communications',
   },
   {
     navCap: 'Ui Components',
@@ -46,37 +46,37 @@ export const navItems: NavItem[] = [
   {
     displayName: 'Badge',
     iconName: 'solar:archive-minimalistic-line-duotone',
-    route: '/ui-components/badge',
+    route: '/admin/ui-components/badge',
   },
   {
     displayName: 'Chips',
     iconName: 'solar:danger-circle-line-duotone',
-    route: '/ui-components/chips',
+    route: '/admin/ui-components/chips',
   },
   {
     displayName: 'Lists',
     iconName: 'solar:bookmark-square-minimalistic-line-duotone',
-    route: '/ui-components/lists',
+    route: '/admin/ui-components/lists',
   },
   {
     displayName: 'Menu',
     iconName: 'solar:file-text-line-duotone',
-    route: '/ui-components/menu',
+    route: '/admin/ui-components/menu',
   },
   {
     displayName: 'Tooltips',
     iconName: 'solar:text-field-focus-line-duotone',
-    route: '/ui-components/tooltips',
+    route: '/admin/ui-components/tooltips',
   },
   {
     displayName: 'Forms',
     iconName: 'solar:file-text-line-duotone',
-    route: '/ui-components/forms',
+    route: '/admin/ui-components/forms',
   },
   {
     displayName: 'Tables',
     iconName: 'solar:tablet-line-duotone',
-    route: '/ui-components/tables',
+    route: '/admin/ui-components/tables',
   },
   {
     navCap: 'Auth',
@@ -99,11 +99,11 @@ export const navItems: NavItem[] = [
   {
     displayName: 'Icons',
     iconName: 'solar:sticker-smile-circle-2-line-duotone',
-    route: '/extra/icons',
+    route: '/admin/extra/icons',
   },
   {
     displayName: 'Sample Page',
     iconName: 'solar:planet-3-line-duotone',
-    route: '/extra/sample-page',
+    route: '/admin/extra/sample-page',
   },
 ];

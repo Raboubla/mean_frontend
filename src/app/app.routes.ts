@@ -1,17 +1,36 @@
 import { Routes } from '@angular/router';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
+import { ClientComponent } from './layouts/client/client.component';
+import { ClientHomeComponent } from './pages/client/home/home.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
+    component: ClientComponent,
+    children: [
+      {
+        path: '',
+        component: ClientHomeComponent,
+      },
+      {
+        path: 'shops/:id',
+        loadComponent: () =>
+          import('./pages/client/shop-details/shop-details.component').then(
+            (m) => m.ClientShopDetailsComponent
+          ),
+      },
+    ],
+  },
+  {
+    path: 'admin',
     component: FullComponent,
     canActivate: [authGuard],
     children: [
       {
         path: '',
-        redirectTo: '/dashboard',
+        redirectTo: '/admin/dashboard', // Redirect to dashboard within admin
         pathMatch: 'full',
       },
       {
@@ -93,3 +112,4 @@ export const routes: Routes = [
     redirectTo: 'authentication/error',
   },
 ];
+

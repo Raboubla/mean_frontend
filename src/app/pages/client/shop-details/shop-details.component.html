@@ -1,0 +1,98 @@
+<div class="shop-details-container" *ngIf="shop; else loadingOrError">
+    <!-- Full Width Banner -->
+    <div class="shop-banner position-relative">
+        <div class="banner-image"
+            [style.backgroundImage]="'url(' + (getBannerUrl(shop) || 'assets/images/backgrounds/login-bg.jpg') + ')'"
+            style="height: 350px; background-size: cover; background-position: center;">
+            <div class="overlay"
+                style="background: rgba(0,0,0,0.4); position: absolute; top:0; left:0; right:0; bottom:0;"></div>
+        </div>
+
+        <div class="banner-content position-absolute bottom-0 start-0 p-32 w-100 text-white">
+            <div class="container">
+                <h1 class="mat-headline-1 f-w-700 m-b-8 text-shadow" style="font-size: 3rem;">{{shop.name}}</h1>
+                <div class="d-flex align-items-center gap-2 m-b-16">
+                    <span class="badge bg-accent f-s-14" *ngIf="shop.status === 'OPEN'">OPEN NOW</span>
+                    <span class="badge bg-danger f-s-14" *ngIf="shop.status === 'CLOSED'">CLOSED</span>
+                    <span class="badge bg-warning f-s-14 text-dark" *ngIf="shop.status === 'COMING_SOON'">COMING
+                        SOON</span>
+                    <span class="f-s-16 opacity-75"><mat-icon class="icon-18 align-middle m-r-4">location_on</mat-icon>
+                        Floor {{shop.floor}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Content -->
+    <div class="container m-t-32">
+        <div class="row">
+            <!-- Left Info Column -->
+            <div class="col-lg-8">
+                <mat-card class="cardWithShadow m-b-24">
+                    <mat-card-content class="p-24">
+                        <h3 class="mat-title f-w-600 m-b-16">About {{shop.name}}</h3>
+                        <p class="mat-body-1 m-b-24" style="white-space: pre-line;">{{shop.description || 'No
+                            description available.'}}</p>
+
+                        <div class="m-b-24">
+                            <h4 class="mat-subtitle-1 f-w-600 m-b-8">Categories</h4>
+                            <mat-chip-listbox>
+                                <mat-chip-option color="primary" selected
+                                    *ngFor="let cat of shop.category">{{cat}}</mat-chip-option>
+                            </mat-chip-listbox>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- Future Product Grid Placeholder -->
+                <div class="m-t-24">
+                    <h3 class="mat-headline-4 m-b-24">Products</h3>
+                    <div class="alert alert-light-primary text-primary" role="alert">
+                        Products related to this shop will appear here.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar Column -->
+            <div class="col-lg-4">
+                <mat-card class="cardWithShadow m-b-24">
+                    <mat-card-content class="p-24">
+                        <h3 class="mat-title f-w-600 m-b-16">Opening Hours</h3>
+                        <div class="opening-hours-list">
+                            <div class="d-flex justify-content-between p-y-8 border-bottom"
+                                *ngFor="let hours of shop.opening_hours">
+                                <span class="f-w-500">{{hours.day | titlecase}}</span>
+                                <span class="text-muted">{{hours.open}} - {{hours.close}}</span>
+                            </div>
+                            <div class="p-y-16 text-center"
+                                *ngIf="!shop.opening_hours || shop.opening_hours.length === 0">
+                                <span class="text-muted">Hours not available</span>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <mat-card class="cardWithShadow">
+                    <mat-card-content class="p-24">
+                        <h3 class="mat-title f-w-600 m-b-16">Actions</h3>
+                        <button mat-flat-button color="primary" class="w-100 m-b-8">Contact Shop</button>
+                        <button mat-stroked-button color="warn" class="w-100">Report Issue</button>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #loadingOrError>
+    <div class="container p-y-48 text-center">
+        <div *ngIf="isLoading; else errorState">
+            <p>Loading shop details...</p>
+        </div>
+        <ng-template #errorState>
+            <h3>Shop not found</h3>
+            <p>The shop you are looking for does not exist or has been removed.</p>
+            <a mat-raised-button color="primary" routerLink="/">Go Back Home</a>
+        </ng-template>
+    </div>
+</ng-template>

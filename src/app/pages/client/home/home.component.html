@@ -1,0 +1,46 @@
+<div class="container text-center text-primary-content">
+    <div class="hero-section m-b-48">
+        <h1 class="mat-headline-1 m-b-16">Welcome to Stefan Mall</h1>
+        <p class="mat-body-1 m-b-24 f-s-18">Your one-stop destination for quality products.</p>
+
+    </div>
+
+    <!-- Shops Grid -->
+    <div class="row">
+        <div class="col-12 m-b-24">
+            <h2 class="mat-headline-2 text-start">Our Shops</h2>
+        </div>
+
+        <div class="col-12" *ngIf="isLoading">
+            <p>Loading shops...</p>
+        </div>
+
+        <div class="col-md-4 col-lg-3 m-b-24" *ngFor="let shop of shops">
+            <mat-card class="cardWithShadow position-relative h-100">
+                <img *ngIf="shop.banner_url" mat-card-image [src]="getBannerUrl(shop)"
+                    style="height: 180px; object-fit: cover;">
+
+                <div *ngIf="!shop.banner_url"
+                    style="height: 180px; background-color: white; border-bottom: 1px solid #eee;">
+                </div>
+                <mat-card-content class="p-24 text-start">
+                    <h3 class="mat-title f-w-600 m-b-8">{{shop.name}}</h3>
+                    <div class="d-flex flex-wrap gap-1 m-b-8">
+                        <span class="bg-light-primary text-primary rounded p-4 f-s-10 f-w-600"
+                            *ngFor="let cat of shop.category">
+                            {{cat}}
+                        </span>
+                    </div>
+                    <p class="mat-body-2 text-muted truncate-2">{{shop.description}}</p>
+                </mat-card-content>
+                <div class="p-16 p-t-0 text-end">
+                    <a mat-stroked-button color="accent" [routerLink]="['/shops', shop._id]">Visit Shop</a>
+                </div>
+            </mat-card>
+        </div>
+
+        <div class="col-12" *ngIf="!isLoading && shops.length === 0">
+            <p>No shops available at the moment.</p>
+        </div>
+    </div>
+</div>
