@@ -1,38 +1,65 @@
 <div class="shop-details-container" *ngIf="shop; else loadingOrError">
-    <!-- Full Width Banner -->
-    <div class="shop-banner position-relative">
+    <!-- Full Width Banner with Gradient Overlay -->
+    <div class="shop-banner position-relative overflow-hidden" [style.background-color]="bannerColor">
         <div class="banner-image"
             [style.backgroundImage]="'url(' + (getBannerUrl(shop) || 'assets/images/backgrounds/login-bg.jpg') + ')'"
-            style="height: 350px; background-size: cover; background-position: center;">
+            style="height: 400px; background-size: cover; background-position: center; position: relative; z-index: 1;">
+
+            <!-- Gradient Overlay for better text readability -->
             <div class="overlay"
-                style="background: rgba(0,0,0,0.4); position: absolute; top:0; left:0; right:0; bottom:0;"></div>
+                style="background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.9) 100%); position: absolute; top:0; left:0; right:0; bottom:0; z-index: 2;">
+            </div>
         </div>
 
-        <div class="banner-content position-absolute bottom-0 start-0 p-32 w-100 text-white">
+        <div class="banner-content position-absolute bottom-0 start-0 w-100 text-white p-b-40" style="z-index: 3;">
             <div class="container">
-                <h1 class="mat-headline-1 f-w-700 m-b-8 text-shadow" style="font-size: 3rem;">{{shop.name}}</h1>
-                <div class="d-flex align-items-center gap-2 m-b-16">
-                    <span class="badge bg-accent f-s-14" *ngIf="shop.status === 'OPEN'">OPEN NOW</span>
-                    <span class="badge bg-danger f-s-14" *ngIf="shop.status === 'CLOSED'">CLOSED</span>
-                    <span class="badge bg-warning f-s-14 text-dark" *ngIf="shop.status === 'COMING_SOON'">COMING
-                        SOON</span>
-                    <span class="f-s-16 opacity-75"><mat-icon class="icon-18 align-middle m-r-4">location_on</mat-icon>
-                        Floor {{shop.floor}}</span>
+                <div class="d-flex flex-column align-items-start">
+
+                    <h1 class="mat-headline-1 f-w-900 m-b-16 leading-tight text-shadow-sm"
+                        style="font-size: 3.5rem; letter-spacing: -1px; padding: 5px;">
+                        {{shop.name}}
+                    </h1>
+
+                    <div class="d-flex align-items-center gap-3 mt-auto" style="padding: 5px;">
+                        <span *ngIf="shop.status === 'OPEN'">
+                            <span class="p-4 rounded-circle bg-accent m-r-8 d-inline-block"></span>
+                            OPEN NOW
+                        </span>
+                        <span *ngIf="shop.status === 'CLOSED'">
+                            <span class="p-4 rounded-circle bg-danger m-r-8 d-inline-block"></span>
+                            CLOSED
+                        </span>
+                        <span *ngIf="shop.status === 'COMING_SOON'">
+                            <span class="p-4 rounded-circle bg-warning m-r-8 d-inline-block"></span>
+                            COMING SOON
+                        </span>
+                        <span *ngIf="shop.status === 'UNDER_RENOVATION'">
+                            <span class="p-4 rounded-circle bg-info m-r-8 d-inline-block"></span>
+                            UNDER RENOVATION
+                        </span>
+
+                        <span class="text-white opacity-50 m-x-8">|</span>
+
+                        <div class="d-flex align-items-center text-white opacity-90">
+                            <mat-icon class="icon-22 m-r-6">location_on</mat-icon>
+                            <span class="f-s-16 f-w-500">Floor {{shop.floor}}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Shop Content -->
-    <div class="container m-t-32">
+    <div class="container m-t-40">
         <div class="row">
             <!-- Left Info Column -->
             <div class="col-lg-8">
                 <mat-card class="cardWithShadow m-b-24">
-                    <mat-card-content class="p-24">
-                        <h3 class="mat-title f-w-600 m-b-16">About {{shop.name}}</h3>
-                        <p class="mat-body-1 m-b-24" style="white-space: pre-line;">{{shop.description || 'No
-                            description available.'}}</p>
+                    <mat-card-content class="p-32">
+                        <h3 class="mat-title f-w-700 m-b-16">About {{shop.name}}</h3>
+                        <p class="mat-body-1 m-b-24 f-s-16 leading-relaxed text-muted" style="white-space: pre-line;">
+                            {{shop.description}}</p>
 
                         <div class="m-b-24">
                             <h4 class="mat-subtitle-1 f-w-600 m-b-8">Categories</h4>
@@ -44,11 +71,111 @@
                     </mat-card-content>
                 </mat-card>
 
-                <!-- Future Product Grid Placeholder -->
+
                 <div class="m-t-24">
-                    <h3 class="mat-headline-4 m-b-24">Products</h3>
-                    <div class="alert alert-light-primary text-primary" role="alert">
-                        Products related to this shop will appear here.
+                    <div class="d-flex align-items-center justify-content-between m-b-24">
+                        <h3 class="mat-headline-4 m-0">Products</h3>
+                    </div>
+
+
+                    <div class="row m-b-24">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100" color="primary">
+                                <mat-label>Search Products</mat-label>
+                                <input matInput [(ngModel)]="searchText" placeholder="Ex. Smartphone">
+                                <mat-icon matSuffix>search</mat-icon>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100" color="primary">
+                                <mat-label>Category</mat-label>
+                                <mat-select [(ngModel)]="selectedCategory">
+                                    <mat-option *ngFor="let cat of productCategories" [value]="cat">
+                                        {{cat}}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 col-lg-4 m-b-24" *ngFor="let product of filteredProducts">
+                            <mat-card class="cardWithShadow position-relative h-100">
+                                <img *ngIf="product.image_url" mat-card-image [src]="getProductImageUrl(product)"
+                                    style="height: 180px; object-fit: cover;">
+
+                                <div *ngIf="!product.image_url" class="p-24 text-center bg-light-primary rounded-top">
+                                    <mat-icon class="icon-40 text-primary opacity-50">shopping_bag</mat-icon>
+                                </div>
+                                <mat-card-content class="p-16">
+                                    <span
+                                        class="badge bg-light-accent text-accent rounded-pill f-s-10 f-w-700 p-x-12 p-y-6 m-b-8 d-inline-block text-uppercase"
+                                        style="letter-spacing: 0.5px;">
+                                        {{product.category}}
+                                    </span>
+                                    <h4 class="mat-subtitle-1 f-w-600 m-b-4 text-truncate" [title]="product.name">
+                                        {{product.name}}</h4>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex flex-column">
+                                            <ng-container *ngIf="isPromotionActive(product); else normalPrice">
+                                                <div class="d-flex align-items-center">
+                                                    <span
+                                                        class="text-decoration-line-through text-muted f-s-12">{{formatPrice(product.price)
+                                                        | currency}}</span>
+                                                    <span class="text-error f-w-600 m-l-8">{{ getPromoPrice(product) |
+                                                        currency}}</span>
+                                                </div>
+                                                <span
+                                                    class="badge bg-light-error text-error rounded f-s-10 w-fit-content"
+                                                    *ngIf="product.promotion?.discount_percent">
+
+                                                    -{{ product.promotion?.discount_percent }}%
+                                                </span>
+                                            </ng-container>
+                                            <ng-template #normalPrice>
+                                                <h5 class="mat-body-2 f-w-700 m-0">{{formatPrice(product.price) |
+                                                    currency}}</h5>
+                                            </ng-template>
+                                        </div>
+                                        <div [ngSwitch]="product.status"
+                                            class="f-s-12 f-w-600 d-flex align-items-center">
+
+                                            <span *ngSwitchCase="'AVAILABLE'"
+                                                class="text-success d-flex align-items-center">
+
+                                                In Stock
+                                            </span>
+
+                                            <span *ngSwitchCase="'OUT_OF_STOCK'"
+                                                class="text-error d-flex align-items-center">
+
+                                                Out of Stock
+                                            </span>
+
+                                            <span *ngSwitchCase="'PRE_ORDER'"
+                                                class="text-warning d-flex align-items-center">
+
+                                                Pre-Order
+                                            </span>
+
+                                            <span *ngSwitchCase="'DISCONTINUED'"
+                                                class="text-muted d-flex align-items-center">
+
+                                                Discontinued
+                                            </span>
+
+                                            <span *ngSwitchDefault class="text-muted">
+                                                N/A
+                                            </span>
+                                        </div>
+                                    </div>
+                                </mat-card-content>
+                            </mat-card>
+                        </div>
+
+                        <div class="col-12 text-center p-y-24" *ngIf="products.length === 0">
+                            <p class="text-muted">No products found for this shop.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -74,9 +201,41 @@
 
                 <mat-card class="cardWithShadow">
                     <mat-card-content class="p-24">
-                        <h3 class="mat-title f-w-600 m-b-16">Actions</h3>
-                        <button mat-flat-button color="primary" class="w-100 m-b-8">Contact Shop</button>
+                        <h3 class="mat-title f-w-600 m-b-16">Contact</h3>
+
+                        <div *ngIf="shop.contact; else noContact">
+                            <div class="d-flex align-items-center m-b-12" *ngIf="shop.contact.phone">
+                                <mat-icon class="text-primary m-r-8 icon-20">phone</mat-icon>
+                                <span class="f-s-14">{{shop.contact.phone}}</span>
+                            </div>
+
+                            <div class="d-flex align-items-center m-b-12" *ngIf="shop.contact.email">
+                                <mat-icon class="text-primary m-r-8 icon-20">email</mat-icon>
+                                <span class="f-s-14 text-truncate"
+                                    [title]="shop.contact.email">{{shop.contact.email}}</span>
+                            </div>
+
+
+                            <div class="d-flex align-items-center m-b-12" *ngIf="shop.contact?.social_media?.facebook">
+                                <mat-icon class="text-primary m-r-8 icon-20">facebook</mat-icon>
+                                <span class="f-s-14 text-truncate"
+                                    [title]="shop.contact?.social_media?.facebook">{{shop.contact?.social_media?.facebook}}</span>
+                            </div>
+
+                            <div class="d-flex align-items-center m-b-12" *ngIf="shop.contact?.social_media?.instagram">
+                                <mat-icon class="text-danger m-r-8 icon-20">camera_alt</mat-icon>
+                                <span class="f-s-14 text-truncate"
+                                    [title]="shop.contact?.social_media?.instagram">{{shop.contact?.social_media?.instagram}}</span>
+                            </div>
+
+
+
+                        </div>
                         <button mat-stroked-button color="warn" class="w-100">Report Issue</button>
+
+                        <ng-template #noContact>
+                            <p class="text-muted f-s-14">No contact information available.</p>
+                        </ng-template>
                     </mat-card-content>
                 </mat-card>
             </div>

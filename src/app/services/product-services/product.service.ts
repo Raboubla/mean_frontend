@@ -19,6 +19,7 @@ export interface Product {
     is_active: boolean;
     shop: string | { _id: string; name: string }; // ID or populated object
     promotion?: Promotion;
+    image_url: string;
 }
 
 @Injectable({

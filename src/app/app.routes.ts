@@ -4,6 +4,7 @@ import { FullComponent } from './layouts/full/full.component';
 import { ClientComponent } from './layouts/client/client.component';
 import { ClientHomeComponent } from './pages/client/home/home.component';
 import { authGuard } from './guards/auth.guard';
+import { ClientPromotionsComponent } from './pages/client/promotions/promotions.component';
 
 export const routes: Routes = [
   {
@@ -19,6 +20,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/client/shop-details/shop-details.component').then(
             (m) => m.ClientShopDetailsComponent
+          ),
+      },
+      {
+        path: 'promotions',
+        loadComponent: () =>
+          import('./pages/client/promotions/promotions.component').then(
+            (m) => m.ClientPromotionsComponent
           ),
       },
     ],

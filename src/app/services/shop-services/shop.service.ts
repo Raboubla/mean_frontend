@@ -9,6 +9,15 @@ export interface OpeningHour {
   close: string;
 }
 
+export interface Contact {
+  phone?: string;
+  email?: string;
+  social_media?: {
+    facebook?: string;
+    instagram?: string;
+  };
+}
+
 export interface Shop {
   _id: string;
   name: string;
@@ -19,6 +28,7 @@ export interface Shop {
   view_count: number;
   opening_hours: OpeningHour[];
   banner_url?: string;
+  contact?: Contact;
 }
 
 @Injectable({
