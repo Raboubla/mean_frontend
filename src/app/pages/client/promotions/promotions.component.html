@@ -1,75 +1,105 @@
-<div class="container m-t-32">
+<div class="container m-t-32 m-b-48">
     <!-- Header -->
     <div class="text-center m-b-48">
-        <h1 class="mat-headline-2 f-w-900 m-b-8">Special Offers</h1>
-        <p class="mat-subtitle-1 text-muted">Don't miss out on our best deals and exclusive discounts!</p>
+        <h1 class="mat-headline-1 f-w-900 m-b-8">Special Offers</h1>
+        <p class="mat-subtitle-1 text-muted f-s-18">Don't miss out on our best deals and exclusive discounts!</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="row justify-content-center m-b-40">
+        <div class="col-md-8 col-lg-6">
+            <mat-form-field appearance="outline" class="w-100 search-field shadow-sm rounded-pill-input">
+                <mat-label>Search Offers</mat-label>
+                <input matInput [(ngModel)]="searchText" placeholder="Search by product name or category...">
+                <mat-icon matSuffix class="text-primary icon-24">search</mat-icon>
+            </mat-form-field>
+        </div>
     </div>
 
     <!-- Loading State -->
     <div *ngIf="isLoading" class="text-center p-y-48">
-        <p>Loading best deals...</p>
+        <p class="text-muted f-s-16">Loading best deals...</p>
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="!isLoading && products.length === 0" class="text-center p-y-48">
-        <mat-icon class="icon-64 text-muted m-b-16">local_offer</mat-icon>
-        <h3>No active promotions at the moment.</h3>
-        <p class="text-muted">Check back later for great deals!</p>
-        <a mat-raised-button color="primary" routerLink="/" class="m-t-16">Browse All Shops</a>
+    <div *ngIf="!isLoading && filteredProducts.length === 0" class="text-center p-y-48 bg-light-primary rounded-16">
+        <mat-icon class="icon-64 text-primary m-b-16 opacity-50">local_offer</mat-icon>
+        <h3 class="f-w-700">No offers found.</h3>
+        <p class="text-muted m-b-24" *ngIf="products.length > 0">Try adjusting your search criteria.</p>
+        <p class="text-muted m-b-24" *ngIf="products.length === 0">Check back later for new promotions!</p>
+        <a mat-flat-button color="primary" routerLink="/" class="p-x-24 p-y-8 f-s-16">Browse All Shops</a>
     </div>
 
     <!-- Products Grid -->
-    <div class="row" *ngIf="!isLoading && products.length > 0">
-        <div class="col-md-6 col-lg-3 m-b-32" *ngFor="let product of products">
-            <mat-card class="cardWithShadow h-100 position-relative hover-card overflow-hidden">
-                <!-- Discount Badge -->
-                <div class="position-absolute top-0 end-0 m-16 z-index-1">
-                    <span class="badge bg-error text-white rounded-pill f-s-12 f-w-700 p-x-12 p-y-6 shadow-sm"
-                        *ngIf="product.promotion?.discount_percent">
-                        -{{product.promotion?.discount_percent}}%
-                    </span>
-                    <span class="badge bg-error text-white rounded-pill f-s-12 f-w-700 p-x-12 p-y-6 shadow-sm"
-                        *ngIf="!product.promotion?.discount_percent && product.promotion">
-                        SALE
-                    </span>
-                </div>
+    <div class="row" *ngIf="!isLoading && filteredProducts.length > 0">
+        <div class="col-sm-6 col-md-4 col-lg-3 m-b-32" *ngFor="let product of filteredProducts">
+            <mat-card class="cardWithShadow h-100 border-0 shadow-hover transition-300 overflow-hidden">
+                <!-- Image Container -->
+                <div class="position-relative ">
+                    <!-- Discount Badge -->
+                    <div class="position-absolute top-0 end-0 m-16 z-index-1">
+                        <span class="badge bg-error text-white rounded-pill f-s-12 f-w-700 p-x-12 p-y-6 shadow-sm"
+                            *ngIf="product.promotion?.discount_percent">
+                            -{{product.promotion?.discount_percent}}%
+                        </span>
+                        <span class="badge bg-error text-white rounded-pill f-s-12 f-w-700 p-x-12 p-y-6 shadow-sm"
+                            *ngIf="!product.promotion?.discount_percent && product.promotion">
+                            SALE
+                        </span>
+                        <!-- Title -->
+                        <p [title]="product.name">
+                            {{product.name}}
+                        </p>
+                    </div>
 
-                <!-- Image -->
-                <div class="position-relative">
-                    <img mat-card-image [src]="getProductImageUrl(product)" alt="{{product.name}}"
-                        style="height: 200px; object-fit: cover; width: 100%;">
+                    <!-- Product Image -->
+                    <img *ngIf="product.image_url" [src]="getProductImageUrl(product)" [alt]="product.name"
+                        style="height: 220px; object-fit: cover; width: 100%; display: block;">
+
+                    <!-- Placeholder if no image -->
+                    <div *ngIf="!product.image_url"
+                        class="d-flex align-items-center justify-content-center bg-light-success"
+                        style="height: 220px;">
+                        <mat-icon class="icon-60 text-success opacity-30">shopping_bag</mat-icon>
+                    </div>
+
+                    <!-- Hover Overlay -->
                     <div
-                        class="overlay-hover position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-black-alpha-0">
-                        <!-- Optional hover effect -->
+                        class="overlay-hover position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-black-alpha-10 opacity-0 transition-300">
+                        <a mat-fab color="warn" [routerLink]="['/shops', getShopId(product)]" class="transform-scale-0">
+                            <mat-icon>store</mat-icon>
+                        </a>
                     </div>
                 </div>
 
+                <!-- Card Content -->
                 <mat-card-content class="p-20 d-flex flex-column h-100">
-                    <!-- Category -->
-                    <span
-                        class="badge bg-light-primary text-primary rounded-pill f-s-10 f-w-700 p-x-10 p-y-4 w-fit-content m-b-8 text-uppercase">
-                        {{product.category}}
-                    </span>
-
-                    <!-- Title -->
-                    <h3 class="mat-subtitle-1 f-w-700 m-b-8 text-truncate" [title]="product.name">{{product.name}}</h3>
-
-                    <!-- Price -->
-                    <div class="d-flex align-items-baseline m-b-16">
-                        <span class="text-decoration-line-through text-muted f-s-14 m-r-8">
-                            {{formatPrice(product.price) | currency}}
+                    <!-- Category Badge -->
+                    <div class="m-b-12">
+                        <span
+                            class="badge bg-light-primary text-primary rounded-pill f-s-10 f-w-700 p-x-10 p-y-4 text-uppercase">
+                            {{product.category}}
                         </span>
-                        <span class="text-error f-w-700 f-s-18">
+                    </div>
+
+
+
+                    <!-- Price Section -->
+                    <div class="d-flex align-items-baseline m-b-16">
+                        <span class="text-error f-w-800 f-s-18 m-r-8">
                             {{getPromoPrice(product) | currency}}
+                        </span>
+                        <span class="text-decoration-line-through text-muted f-s-14"
+                            *ngIf="product.promotion?.discount_percent">
+                            {{formatPrice(product.price) | currency}}
                         </span>
                     </div>
 
                     <!-- Action Button -->
-                    <div class="mt-auto">
-                        <a mat-stroked-button color="primary" class="w-100"
-                            [routerLink]="['/shops', getShopId(product)]">
-                            <mat-icon class="icon-18 m-r-4">store</mat-icon>
-                            Go to Boutique
+                    <div class="mt-auto w-70">
+                        <a color="primary" class="w-50 rounded-pill border-primary f-w-600"
+                            [routerLink]="['/shops', getShopId(product)]" style="height: 50px; line-height: 20px;">
+                            go
                         </a>
                     </div>
                 </mat-card-content>
@@ -77,3 +107,26 @@
         </div>
     </div>
 </div>
+
+<style>
+    .shadow-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .hover-card:hover .overlay-hover {
+        opacity: 1 !important;
+    }
+
+    .hover-card:hover .overlay-hover mat-fab {
+        transform: scale(1) !important;
+    }
+
+    .transition-300 {
+        transition: all 0.3s ease-in-out;
+    }
+
+    .rounded-pill-input .mat-mdc-form-field-outline {
+        border-radius: 50px !important;
+    }
+</style>

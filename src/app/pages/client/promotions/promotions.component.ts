@@ -4,7 +4,10 @@ import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips'; // Import MatChipsModule
+import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
 import { ProductService, Product } from '../../../services/product-services/product.service';
 import { environment } from 'src/environments/environment';
 
@@ -17,13 +20,17 @@ import { environment } from 'src/environments/environment';
         MatCardModule,
         MatButtonModule,
         MatIconModule,
-        MatChipsModule // Add to imports
+        MatChipsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        FormsModule
     ],
     templateUrl: './promotions.component.html',
 })
 export class ClientPromotionsComponent implements OnInit {
     products: Product[] = [];
     isLoading = true;
+    searchText: string = '';
 
     constructor(private productService: ProductService) { }
 
@@ -34,7 +41,6 @@ export class ClientPromotionsComponent implements OnInit {
     fetchPromotionalProducts() {
         this.productService.getPromotionalProducts().subscribe({
             next: (res: any) => {
-                // Handle both array response and object with products property
                 if (Array.isArray(res)) {
                     this.products = res;
                 } else if (res && res.products) {
@@ -51,9 +57,17 @@ export class ClientPromotionsComponent implements OnInit {
         });
     }
 
+    get filteredProducts(): Product[] {
+        if (!this.searchText) return this.products;
+        return this.products.filter(product =>
+            product.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
+            product.category.toLowerCase().includes(this.searchText.toLowerCase())
+        );
+    }
+
     getProductImageUrl(product: Product): string {
         if (!product.image_url) {
-            return 'assets/images/products/s1.jpg'; // Placeholder
+            return 'assets/images/products/s1.jpg';
         }
 
         if (product.image_url.startsWith('http')) {

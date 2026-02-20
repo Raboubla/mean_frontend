@@ -71,6 +71,22 @@
                 </mat-form-field>
             </div>
 
+            <!-- Product Image Upload -->
+            <div class="col-lg-12 m-b-16">
+                <mat-label class="f-w-600 m-b-8 d-block">Product Image (Optional)</mat-label>
+                <div class="d-flex align-items-center gap-16">
+                    <button mat-stroked-button color="primary" type="button" (click)="fileInput.click()">
+                        <mat-icon>upload_file</mat-icon> Choose File
+                    </button>
+                    <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*"
+                        style="display: none;">
+                    <span class="f-s-14 text-muted" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+                    <span class="f-s-14 text-muted" *ngIf="!selectedFile && local_data.image_url">
+                        Current: {{ local_data.image_url }}
+                    </span>
+                </div>
+            </div>
+
             <!-- Promotion Section -->
             <div class="col-12 m-t-16 m-b-8">
                 <h4 class="mat-subtitle-2 f-w-600">Promotion Details</h4>

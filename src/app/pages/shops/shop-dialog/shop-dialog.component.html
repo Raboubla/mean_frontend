@@ -54,6 +54,57 @@
                 </mat-form-field>
             </div>
 
+            <!-- Banner Image Upload -->
+            <div class="col-lg-12 m-b-16">
+                <mat-label class="f-w-600 m-b-8 d-block">Banner Image (Optional)</mat-label>
+                <div class="d-flex align-items-center gap-16">
+                    <button mat-stroked-button color="primary" type="button" (click)="fileInput.click()">
+                        <mat-icon>upload_file</mat-icon> Choose File
+                    </button>
+                    <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*"
+                        style="display: none;">
+                    <span class="f-s-14 text-muted" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+                    <span class="f-s-14 text-muted" *ngIf="!selectedFile && local_data.banner_url">
+                        Current: {{ local_data.banner_url }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Contact Details -->
+            <div class="col-lg-12" formGroupName="contact">
+                <h3 class="mat-subtitle-1 f-w-600 m-b-16">Contact Details</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Phone</mat-label>
+                            <input matInput formControlName="phone" placeholder="Phone Number" />
+                        </mat-form-field>
+                    </div>
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Email</mat-label>
+                            <input matInput formControlName="email" placeholder="Email Address" />
+                        </mat-form-field>
+                    </div>
+                </div>
+                <!-- Social Media -->
+                <div class="row" formGroupName="social_media">
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Facebook URL</mat-label>
+                            <input matInput formControlName="facebook" placeholder="https://facebook.com/..." />
+                        </mat-form-field>
+                    </div>
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Instagram URL</mat-label>
+                            <input matInput formControlName="instagram" placeholder="https://instagram.com/..." />
+                        </mat-form-field>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- Opening Hours -->
             <div class="col-lg-12">
                 <h3 class="mat-subtitle-1 f-w-600 m-b-16">Opening Hours</h3>
