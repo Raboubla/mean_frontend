@@ -66,7 +66,7 @@ export class AppUserDialogComponent {
     getShops() {
         this.shopService.getAllShops().subscribe({
             next: (res: any) => {
-                this.shops = res.shops;
+                this.shops = Array.isArray(res) ? res : (res.shops || []);
             },
             error: (err) => console.error('Error fetching shops', err)
         });
