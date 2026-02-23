@@ -1,0 +1,46 @@
+// Stat filter selects (compact)
+.stat-filter-field {
+    width: 120px;
+
+    .mat-mdc-form-field-subscript-wrapper {
+        display: none;
+    }
+}
+
+// Stats card
+.stat-card {
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    mat-card-content {
+        padding: 16px !important;
+    }
+}
+
+// Icon container
+.stat-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .stat-icon {
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+    }
+}
+
+// Count number
+.stat-count {
+    line-height: 1;
+    letter-spacing: -0.5px;
+}

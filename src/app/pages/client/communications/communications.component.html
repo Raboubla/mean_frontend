@@ -1,0 +1,386 @@
+<div class="comm-page">
+
+    <!-- Hero Banner -->
+    <div class="comm-hero d-flex flex-column align-items-center justify-content-center text-white text-center">
+        <h1 class="f-s-36 f-w-700 m-b-8">_Upcoming Events & Announcements_ </h1>
+        <p class="f-s-16 m-0 hero-subtitle">Stay up to date with what's happening</p>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="comm-tabs d-flex justify-content-center gap-16 p-y-24">
+        <button mat-flat-button [color]="activeTab === 'ALL' ? 'primary' : undefined"
+            [class.tab-inactive]="activeTab !== 'ALL'" (click)="setTab('ALL')">
+            <mat-icon>all_inclusive</mat-icon>
+            All <span class="tab-count">{{ all.length }}</span>
+        </button>
+        <button mat-flat-button [color]="activeTab === 'EVENT' ? 'warn' : undefined"
+            [class.tab-inactive]="activeTab !== 'EVENT'" (click)="setTab('EVENT')">
+            <mat-icon>event</mat-icon>
+            Events <span class="tab-count">{{ events.length }}</span>
+        </button>
+        <button mat-flat-button [color]="activeTab === 'ANNOUNCEMENT' ? 'accent' : undefined"
+            [class.tab-inactive]="activeTab !== 'ANNOUNCEMENT'" (click)="setTab('ANNOUNCEMENT')">
+            <mat-icon>campaign</mat-icon>
+            Announcements <span class="tab-count">{{ announcements.length }}</span>
+        </button>
+    </div>
+
+    <!-- Loading -->
+    @if (isLoading) {
+    <div class="d-flex justify-content-center p-y-48">
+        <mat-spinner diameter="52"></mat-spinner>
+    </div>
+    }
+
+    <!-- Empty state -->
+    @if (!isLoading && displayed.length === 0) {
+    <div class="empty-state d-flex flex-column align-items-center p-y-64 text-muted">
+        <mat-icon class="f-s-64 m-b-16" style="width:64px;height:64px;font-size:64px;">event_busy</mat-icon>
+        <p class="f-s-18">No upcoming communications for now</p>
+    </div>
+    }
+
+    <!-- Cards Grid -->
+    @if (!isLoading && displayed.length > 0) {
+    <div class="comm-grid container-fluid p-x-32 p-b-48">
+        <div class="row g-4">
+            @for (comm of displayed; track comm._id) {
+
+            <!-- EVENT: Poster card -->
+            @if (comm.type === 'EVENT') {
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="event-poster" [style.background-image]="'url(' + getImageUrl(comm) + ')'">
+                    <div class="poster-overlay">
+                        <div class="poster-badge event-badge">
+                            <mat-icon>event</mat-icon> EVENT
+                        </div>
+                        <div class="poster-body">
+                            <h2 class="poster-title">{{ comm.title }}</h2>
+                            <p class="poster-content">{{ comm.content }}</p>
+                            <div class="poster-dates d-flex align-items-center gap-16 m-t-12">
+                                <div class="date-block">
+                                    <mat-icon class="f-s-14">calendar_today</mat-icon>
+                                    <span>{{ formatDate(comm.start_date) }}</span>
+                                </div>
+                                <span class="date-sep">→</span>
+                                <div class="date-block">
+                                    <span>{{ formatDate(comm.end_date) }}</span>
+                                </div>
+                            </div>
+                            <div class="poster-footer d-flex align-items-center justify-content-between m-t-16">
+                                <span class="days-left">
+                                    <mat-icon>timer</mat-icon>
+                                    {{ getDaysLeft(comm.end_date) }} days left
+                                </span>
+                                @if (comm.shop && $any(comm.shop).name) {
+                                <span class="shop-tag">
+                                    <mat-icon>store</mat-icon>
+                                    {{ $any(comm.shop).name }}
+                                </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+
+            <!-- ANNOUNCEMENT: Flat ribbon card -->
+            @if (comm.type === 'ANNOUNCEMENT') {
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="announce-card">
+                    <div class="announce-img-wrap">
+                        <img [src]="getImageUrl(comm)" alt="{{ comm.title }}" class="announce-img" />
+                        <div class="announce-badge">
+                            <mat-icon>campaign</mat-icon> ANNOUNCEMENT
+                        </div>
+                    </div>
+                    <div class="announce-body">
+                        <h2 class="announce-title">{{ comm.title }}</h2>
+                        <p class="announce-content">{{ comm.content }}</p>
+                        <div class="announce-meta d-flex align-items-center justify-content-between m-t-12">
+                            <span class="date-range">
+                                <mat-icon class="f-s-14">date_range</mat-icon>
+                                {{ formatDate(comm.start_date) }} — {{ formatDate(comm.end_date) }}
+                            </span>
+                            @if (getDaysLeft(comm.end_date) <= 3) { <span class="urgent-tag">Urgent</span>
+                                }
+                        </div>
+                        @if (comm.shop && $any(comm.shop).name) {
+                        <div class="announce-shop m-t-8">
+                            <mat-icon class="f-s-14">store</mat-icon>
+                            {{ $any(comm.shop).name }}
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            }
+
+            }
+        </div>
+    </div>
+    }
+
+</div>
+
+<style>
+    /* ====== Page ====== */
+    .comm-page {
+        min-height: 100vh;
+        background: #f5f7fb;
+    }
+
+    /* ====== Hero ====== */
+    .comm-hero {
+        min-height: 240px;
+        background: linear-gradient(135deg, #1e3a5f 0%, #4f5bd5 50%, #962fbf 100%);
+        padding: 48px 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .comm-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url('assets/images/gallery/background/u2.jpg') center/cover no-repeat;
+        opacity: 0.12;
+    }
+
+    .comm-hero h1,
+    .comm-hero p {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-subtitle {
+        opacity: 0.85;
+    }
+
+    /* ====== Tabs ====== */
+    .comm-tabs {
+        background: #fff;
+        border-bottom: 1px solid #e8eaf0;
+        flex-wrap: wrap;
+    }
+
+    .tab-inactive {
+        background: #f0f2f8 !important;
+        color: #6c7591 !important;
+    }
+
+    .tab-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        font-size: 11px;
+        font-weight: 700;
+        margin-left: 6px;
+    }
+
+    /* ====== EVENT POSTER ====== */
+    .event-poster {
+        border-radius: 16px;
+        overflow: hidden;
+        height: 440px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: default;
+    }
+
+    .event-poster:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+    }
+
+    .poster-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.3) 60%, transparent 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 20px;
+        color: #fff;
+    }
+
+    .poster-badge,
+    .announce-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        align-self: flex-start;
+    }
+
+    .event-badge {
+        background: rgba(250, 80, 60, 0.9);
+        color: #fff;
+    }
+
+
+    .poster-title {
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 1.3;
+        margin-bottom: 8px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .poster-content {
+        font-size: 13px;
+        opacity: 0.85;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .date-block {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        opacity: 0.9;
+    }
+
+    .date-sep {
+        opacity: 0.6;
+    }
+
+    .poster-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        padding-top: 12px;
+    }
+
+    .days-left,
+    .shop-tag {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .days-left {
+        color: #ffda79;
+    }
+
+    .shop-tag {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 2px 10px;
+        border-radius: 100px;
+    }
+
+    /* ====== ANNOUNCEMENT CARD ====== */
+    .announce-card {
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+
+    .announce-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.14);
+    }
+
+    .announce-img-wrap {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .announce-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+
+    .announce-card:hover .announce-img {
+        transform: scale(1.04);
+    }
+
+    .announce-badge {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: rgba(33, 150, 243, 0.92);
+        color: #fff;
+        font-size: 11px;
+    }
+
+    .announce-body {
+        padding: 20px;
+    }
+
+    .announce-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a2341;
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+
+    .announce-content {
+        font-size: 13px;
+        color: #6c7591;
+        line-height: 1.6;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .announce-meta {
+        font-size: 12px;
+        color: #8a93b4;
+    }
+
+    .date-range {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .urgent-tag {
+        background: #ffe5e5;
+        color: #e53935;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 10px;
+        border-radius: 100px;
+    }
+
+    .announce-shop {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: #5d87ff;
+        font-weight: 600;
+    }
+
+    /* ====== Empty ====== */
+    .empty-state mat-icon {
+        color: #c0c8e8;
+    }
+</style>

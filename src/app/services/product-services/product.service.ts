@@ -36,11 +36,22 @@ export class ProductService {
         return this.http.post(this.apiUrl, productData);
     }
 
-    getAllProducts(page: number = 1, limit: number = 10): Observable<{ products: Product[], total: number, pages: number }> {
-        const params = new HttpParams()
+    getAllProducts(): Observable<{ products: Product[], count: number }> {
+        return this.http.get<{ products: Product[], count: number }>(this.apiUrl);
+    }
+
+    // Client-facing: search + category + infinite scroll pagination
+    getClientProducts(page: number = 1, limit: number = 10, query?: string, category?: string): Observable<{
+        products: Product[]; total: number; pages: number; hasMore: boolean; count: number;
+    }> {
+        let params = new HttpParams()
             .set('page', page.toString())
             .set('limit', limit.toString());
-        return this.http.get<{ products: Product[], total: number, pages: number }>(this.apiUrl, { params });
+        if (query) params = params.set('query', query);
+        if (category) params = params.set('category', category);
+        return this.http.get<{ products: Product[]; total: number; pages: number; hasMore: boolean; count: number }>(
+            `${this.apiUrl}/client`, { params }
+        );
     }
 
     getProductById(id: string): Observable<Product> {
@@ -72,6 +83,14 @@ export class ProductService {
 
     getPromotionalProducts(): Observable<Product[]> {
         return this.http.get<Product[]>(`${this.apiUrl}/filter/promotions`);
+    }
+
+    // Client-facing promotions: search + category filter
+    getClientPromotions(query?: string, category?: string): Observable<{ products: Product[], count: number }> {
+        let params = new HttpParams();
+        if (query) params = params.set('query', query);
+        if (category) params = params.set('category', category);
+        return this.http.get<{ products: Product[], count: number }>(`${this.apiUrl}/client/promotions`, { params });
     }
 
     toggleProductStatus(id: string): Observable<any> {

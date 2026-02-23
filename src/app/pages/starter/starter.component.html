@@ -1,3 +1,55 @@
+<!-- ================= DASHBOARD STATS SECTION ================= -->
+<div class="row align-items-center m-b-16">
+  <div class="col">
+    <h5 class="m-0 f-w-600">Overview</h5>
+  </div>
+  <div class="col-auto d-flex gap-16 align-items-center">
+    <!-- Month selector -->
+    <mat-form-field appearance="outline" class="stat-filter-field m-0">
+      <mat-label>Month</mat-label>
+      <mat-select [(ngModel)]="selectedMonth" (selectionChange)="onFilterChange()">
+        @for (m of months; track m.value) {
+        <mat-option [value]="m.value">{{ m.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <!-- Year selector -->
+    <mat-form-field appearance="outline" class="stat-filter-field m-0">
+      <mat-label>Year</mat-label>
+      <mat-select [(ngModel)]="selectedYear" (selectionChange)="onFilterChange()">
+        @for (y of years; track y) {
+        <mat-option [value]="y">{{ y }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>
+
+<!-- Stats Cards Row -->
+<div class="row m-b-24">
+  @for (card of statCards; track card.key) {
+  <div class="col-6 col-md-4 col-xl-2">
+    <mat-card class="stat-card cardWithShadow" [style.border-top]="'3px solid ' + card.color">
+      <mat-card-content class="p-16">
+        <div class="d-flex align-items-center justify-content-between m-b-12">
+          <div class="stat-icon-wrap" [style.background]="card.bgColor">
+            <mat-icon [style.color]="card.color" class="stat-icon">{{ card.icon }}</mat-icon>
+          </div>
+          @if (isLoading) {
+          <mat-spinner diameter="20"></mat-spinner>
+          }
+        </div>
+        <div class="stat-count f-s-28 f-w-700 m-b-4" [style.color]="card.color">
+          {{ isLoading ? '—' : (stats[card.key] | number) }}
+        </div>
+        <div class="f-s-13 text-muted">{{ card.label }}</div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  }
+</div>
+
+<!-- ================= EXISTING DASHBOARD WIDGETS ================= -->
 <div class="row">
   <div class="col-lg-8">
     <app-revenue-forecast></app-revenue-forecast>

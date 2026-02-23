@@ -51,7 +51,7 @@ export class AppProductComponent implements OnInit {
     }
 
     loadProducts() {
-        this.productService.getAllProducts(1, 1000).subscribe({ // Fetch meaningful amount
+        this.productService.getAllProducts().subscribe({ // Fetch all products for admin table
             next: (res: any) => {
                 // Check structure: { products: [], total: ... } OR just []
                 const products = res.products || res;

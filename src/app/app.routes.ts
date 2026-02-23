@@ -29,6 +29,20 @@ export const routes: Routes = [
             (m) => m.ClientPromotionsComponent
           ),
       },
+      {
+        path: 'communications',
+        loadComponent: () =>
+          import('./pages/client/communications/communications.component').then(
+            (m) => m.ClientCommunicationsComponent
+          ),
+      },
+      {
+        path: 'products',
+        loadComponent: () =>
+          import('./pages/client/products/products.component').then(
+            (m) => m.ClientProductsComponent
+          ),
+      },
     ],
   },
   {

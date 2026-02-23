@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ import { environment } from 'src/environments/environment';
 const CATEGORIES = ['ALL', 'ELECTRONICS', 'CLOTHING', 'HOME', 'FOOD', 'TOYS', 'BEAUTY', 'OTHER'];
 
 @Component({
-    selector: 'app-client-promotions',
+    selector: 'app-client-products',
     standalone: true,
     imports: [
         CommonModule,
@@ -22,50 +22,100 @@ const CATEGORIES = ['ALL', 'ELECTRONICS', 'CLOTHING', 'HOME', 'FOOD', 'TOYS', 'B
         MatButtonModule,
         MatProgressSpinnerModule,
     ],
-    templateUrl: './promotions.component.html',
+    templateUrl: './products.component.html',
 })
-export class ClientPromotionsComponent implements OnInit, OnDestroy {
+export class ClientProductsComponent implements OnInit, AfterViewInit, OnDestroy {
+
+    @ViewChild('scrollSentinel') scrollSentinel!: ElementRef;
+
     products: Product[] = [];
-    isLoading = true;
+    isLoading = false;
+    isLoadingMore = false;
+    hasMore = true;
     total = 0;
+
+    page = 1;
+    readonly limit = 10;
 
     searchQuery = '';
     activeCategory = 'ALL';
     categories = CATEGORIES;
 
     private searchSubject = new Subject<string>();
+    private observer!: IntersectionObserver;
 
-    constructor(private productService: ProductService) { }
+    constructor(
+        private productService: ProductService,
+        private ngZone: NgZone
+    ) { }
 
     ngOnInit(): void {
-        this.loadPromotions();
+        this.loadProducts(true);
 
+        // Debounce typing — only hits backend 400ms after user stops typing
         this.searchSubject.pipe(
             debounceTime(400),
             distinctUntilChanged()
-        ).subscribe(() => this.loadPromotions());
+        ).subscribe(() => this.loadProducts(true));
+    }
+
+    ngAfterViewInit(): void {
+        this.setupIntersectionObserver();
     }
 
     ngOnDestroy(): void {
         this.searchSubject.complete();
+        if (this.observer) this.observer.disconnect();
     }
 
-    loadPromotions(): void {
-        this.isLoading = true;
+    // Watches the invisible div at the bottom of the list
+    private setupIntersectionObserver(): void {
+        this.observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && this.hasMore && !this.isLoadingMore && !this.isLoading) {
+                    this.ngZone.run(() => this.loadMore());
+                }
+            },
+            { threshold: 0.1 }
+        );
+        if (this.scrollSentinel?.nativeElement) {
+            this.observer.observe(this.scrollSentinel.nativeElement);
+        }
+    }
+
+    loadProducts(reset: boolean): void {
+        if (reset) {
+            this.products = [];
+            this.page = 1;
+            this.hasMore = true;
+            this.isLoading = true;
+        } else {
+            this.isLoadingMore = true;
+        }
+
         const category = this.activeCategory === 'ALL' ? undefined : this.activeCategory;
         const query = this.searchQuery.trim() || undefined;
 
-        this.productService.getClientPromotions(query, category).subscribe({
+        this.productService.getClientProducts(this.page, this.limit, query, category).subscribe({
             next: (res) => {
-                this.products = res.products;
-                this.total = res.count;
+                this.products = reset ? res.products : [...this.products, ...res.products];
+                this.total = res.total;
+                this.hasMore = res.hasMore;
                 this.isLoading = false;
+                this.isLoadingMore = false;
             },
             error: (err) => {
-                console.error('Error loading promotions', err);
+                console.error('Error loading products', err);
                 this.isLoading = false;
+                this.isLoadingMore = false;
             }
         });
+    }
+
+    loadMore(): void {
+        if (!this.hasMore || this.isLoadingMore || this.isLoading) return;
+        this.page++;
+        this.loadProducts(false);
     }
 
     onSearchChange(): void {
@@ -75,12 +125,12 @@ export class ClientPromotionsComponent implements OnInit, OnDestroy {
     selectCategory(cat: string): void {
         if (this.activeCategory === cat) return;
         this.activeCategory = cat;
-        this.loadPromotions();
+        this.loadProducts(true);
     }
 
     clearSearch(): void {
         this.searchQuery = '';
-        this.loadPromotions();
+        this.loadProducts(true);
     }
 
     getImageUrl(product: Product): string {
@@ -96,6 +146,10 @@ export class ClientPromotionsComponent implements OnInit, OnDestroy {
         return Number(price);
     }
 
+    hasPromo(product: Product): boolean {
+        return !!(product.promotion?.discount_percent && product.promotion.discount_percent > 0);
+    }
+
     getPromoPrice(product: Product): number {
         const original = this.formatPrice(product.price);
         if (product.promotion?.promo_price) return this.formatPrice(product.promotion.promo_price);
@@ -105,12 +159,12 @@ export class ClientPromotionsComponent implements OnInit, OnDestroy {
         return original;
     }
 
+    getShopName(product: Product): string {
+        return typeof product.shop === 'object' && product.shop ? product.shop.name : '';
+    }
+
     getShopId(product: Product): string {
         if (typeof product.shop === 'object' && product.shop) return product.shop._id;
         return product.shop as string || '';
-    }
-
-    getShopName(product: Product): string {
-        return typeof product.shop === 'object' && product.shop ? product.shop.name : '';
     }
 }

@@ -18,8 +18,8 @@ export class AppSideLoginComponent {
 
   form = new FormGroup({
     // Remplace 'uname' par 'email' pour correspondre à ton backend
-    email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required]),
+    email: new FormControl('admin@gmail.com', [Validators.required, Validators.email]),
+    password: new FormControl('admin', [Validators.required]),
   });
 
   submit() {
@@ -38,4 +38,6 @@ export class AppSideLoginComponent {
       });
     }
   }
+
+
 }
