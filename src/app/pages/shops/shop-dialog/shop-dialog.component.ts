@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
     selector: 'app-shop-dialog',
@@ -22,6 +23,7 @@ import { CommonModule } from '@angular/common';
         MatButtonModule,
         MatDialogModule,
         MatCheckboxModule,
+        MatIconModule
     ],
     templateUrl: './shop-dialog.component.html',
 })
@@ -32,6 +34,8 @@ export class AppShopDialogComponent {
     categories = ['FASHION', 'FOOD', 'ELECTRONICS', 'LEISURE', 'RESTAURANT', 'BEAUTY'];
     statusList = ['OPEN', 'CLOSED', 'UNDER_RENOVATION', 'COMING_SOON'];
     daysOfWeek = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+    selectedFile: File | null = null;
+    errorMessage: string = '';
 
     constructor(
         public dialogRef: MatDialogRef<AppShopDialogComponent>,
@@ -42,6 +46,10 @@ export class AppShopDialogComponent {
         this.local_data = { ...data };
         this.action = this.local_data.action;
 
+        // Initialize contact separately to avoid null errors
+        const contact = this.local_data.contact || {};
+        const social = contact.social_media || {};
+
         this.shopForm = this.fb.group({
             _id: [this.local_data._id],
             name: [this.local_data.name || '', Validators.required],
@@ -49,7 +57,16 @@ export class AppShopDialogComponent {
             floor: [this.local_data.floor, [Validators.required, Validators.min(0)]],
             description: [this.local_data.description || ''],
             status: [this.local_data.status || 'OPEN', Validators.required],
-            opening_hours: this.fb.array([])
+            opening_hours: this.fb.array([]),
+            // Contact fields
+            contact: this.fb.group({
+                phone: [contact.phone || ''],
+                email: [contact.email || '', [Validators.email]],
+                social_media: this.fb.group({
+                    facebook: [social.facebook || ''],
+                    instagram: [social.instagram || '']
+                })
+            })
         });
 
         this.initOpeningHours();
@@ -91,12 +108,17 @@ export class AppShopDialogComponent {
         });
     }
 
-    errorMessage: string = '';
+    onFileSelected(event: any) {
+        const file = event.target.files[0];
+        if (file) {
+            this.selectedFile = file;
+        }
+    }
 
     // Filter out unchecked days before submitting
     doAction() {
         if (this.shopForm.valid) {
-            const formValue = this.shopForm.getRawValue(); // getRawValue to include disabled fields if needed, but we actually want to filter
+            const formValue = this.shopForm.getRawValue();
             this.errorMessage = '';
 
             // Filter opening_hours
@@ -104,11 +126,27 @@ export class AppShopDialogComponent {
                 .filter((h: any) => h.selected)
                 .map((h: any) => ({ day: h.day, open: h.open, close: h.close }));
 
-            const shopData = { ...formValue, opening_hours: activeHours };
-            delete shopData.selected; // clean up if needed, though map handled it
+            // Prepare Data
+            const formData = new FormData();
+
+            // Append simple fields
+            formData.append('name', formValue.name);
+            formData.append('floor', formValue.floor);
+            formData.append('description', formValue.description || '');
+            formData.append('status', formValue.status);
+
+            // Append complex fields as JSON strings
+            formData.append('category', JSON.stringify(formValue.category));
+            formData.append('opening_hours', JSON.stringify(activeHours));
+            formData.append('contact', JSON.stringify(formValue.contact));
+
+            // Append Image
+            if (this.selectedFile) {
+                formData.append('banner', this.selectedFile);
+            }
 
             if (this.action === 'Add') {
-                this.shopService.createShop(shopData).subscribe({
+                this.shopService.createShop(formData).subscribe({
                     next: (res) => this.dialogRef.close({ event: this.action, data: res }),
                     error: (err) => {
                         console.error('Error creating shop', err);
@@ -116,8 +154,8 @@ export class AppShopDialogComponent {
                     }
                 });
             } else {
-                this.shopService.updateShop(shopData._id, shopData).subscribe({
-                    next: () => this.dialogRef.close({ event: this.action, data: shopData }),
+                this.shopService.updateShop(formValue._id, formData).subscribe({
+                    next: (res) => this.dialogRef.close({ event: this.action, data: res.shop || res }), // Return updated shop
                     error: (err) => {
                         console.error('Error updating shop', err);
                         this.errorMessage = err.error?.message || 'An error occurred while updating the shop.';

@@ -11,6 +11,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CommonModule } from '@angular/common';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
     selector: 'app-product-dialog',
@@ -27,7 +28,8 @@ import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material
         MatDialogModule,
         MatCheckboxModule,
         MatDatepickerModule,
-        MatNativeDateModule
+        MatNativeDateModule,
+        MatIconModule
     ],
     templateUrl: './product-dialog.component.html',
 })
@@ -39,6 +41,7 @@ export class AppProductDialogComponent implements OnInit {
     statusList = ['AVAILABLE', 'OUT_OF_STOCK', 'DISCONTINUED', 'PRE_ORDER'];
     shops: any[] = [];
     errorMessage: string = '';
+    selectedFile: File | null = null;
 
     constructor(
         public dialogRef: MatDialogRef<AppProductDialogComponent>,
@@ -133,33 +136,51 @@ export class AppProductDialogComponent implements OnInit {
         });
     }
 
+    onFileSelected(event: any) {
+        const file = event.target.files[0];
+        if (file) {
+            this.selectedFile = file;
+        }
+    }
+
     doAction() {
         if (this.productForm.valid) {
             const formValue = this.productForm.value;
             this.errorMessage = '';
 
-            // Construct payload matching backend structure
-            const productData = {
-                ...formValue,
-                promotion: {
-                    discount_percent: formValue.promo_discount_percent,
-                    promo_price: formValue.promo_price,
-                    end_date: formValue.promo_end_date
-                }
+            const formData = new FormData();
+
+            // Append simple fields
+            formData.append('name', formValue.name);
+            formData.append('description', formValue.description || '');
+            formData.append('price', formValue.price);
+            formData.append('category', formValue.category);
+            formData.append('status', formValue.status);
+            formData.append('shop', formValue.shop);
+            formData.append('is_active', formValue.is_active);
+
+            // Construct and append promotion object if valid
+            const promotion: any = {
+                discount_percent: formValue.promo_discount_percent,
+                promo_price: formValue.promo_price,
+                end_date: formValue.promo_end_date
             };
 
-            // Clean up temporary flat fields
-            delete productData.promo_discount_percent;
-            delete productData.promo_price;
-            delete productData.promo_end_date;
+            // Remove promotion fields if empty/invalid to avoid sending partial data
+            if (!promotion.discount_percent && !promotion.promo_price) {
+                // Do nothing or send null? 
+                // Better to not send usage of promotion if not active
+            } else {
+                formData.append('promotion', JSON.stringify(promotion));
+            }
 
-            // Remove promotion if no discount/price set
-            if (!productData.promotion.discount_percent && !productData.promotion.promo_price) {
-                delete productData.promotion;
+            // Append image
+            if (this.selectedFile) {
+                formData.append('image', this.selectedFile);
             }
 
             if (this.action === 'Add') {
-                this.productService.createProduct(productData).subscribe({
+                this.productService.createProduct(formData).subscribe({
                     next: (res) => this.dialogRef.close({ event: this.action, data: res }),
                     error: (err) => {
                         console.error('Error creating product', err);
@@ -167,8 +188,8 @@ export class AppProductDialogComponent implements OnInit {
                     }
                 });
             } else {
-                this.productService.updateProduct(productData._id, productData).subscribe({
-                    next: () => this.dialogRef.close({ event: this.action, data: productData }),
+                this.productService.updateProduct(formValue._id, formData).subscribe({
+                    next: (res) => this.dialogRef.close({ event: this.action, data: res.product || res }),
                     error: (err) => {
                         console.error('Error updating product', err);
                         this.errorMessage = err.error?.message || 'Error updating product';
