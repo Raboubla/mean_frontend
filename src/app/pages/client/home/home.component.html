@@ -1,46 +1,86 @@
-<div class="container text-center text-primary-content">
-    <div class="hero-section m-b-48">
-        <h1 class="mat-headline-1 m-b-16">Welcome to Stefan Mall</h1>
-        <p class="mat-body-1 m-b-24 f-s-18">Your one-stop destination for quality products.</p>
+<div class="container m-t-32 m-b-48">
 
+    <!-- Header -->
+    <div class="row justify-content-between align-items-center m-b-24">
+        <div class="col">
+            <h1 class="mat-headline-1 m-b-4">Our Shops</h1>
+            <p class="mat-body-1 text-muted f-s-16 m-0">Your one-stop destination for quality products.</p>
+        </div>
+    </div>
+
+    <!-- Search + Floor filter row -->
+    <div class="row m-b-24">
+        <div class="col-lg-5 col-md-6">
+            <mat-form-field appearance="outline" class="w-100 hide-hint">
+                <mat-label>Search Shops</mat-label>
+                <input matInput [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
+                    placeholder="Filter by name..." />
+                <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+        </div>
+        <div class="col-lg-3 col-md-4">
+            <mat-form-field appearance="outline" class="w-100 hide-hint" color="primary">
+                <mat-label>Floor</mat-label>
+                <input matInput type="number" [(ngModel)]="selectedFloor" (ngModelChange)="onFloorChange()"
+                    placeholder="Floor number" min="0" />
+            </mat-form-field>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="col-12 text-center p-y-32" *ngIf="isLoading">
+        <p class="text-muted">Loading shops...</p>
+    </div>
+
+    <!-- Empty state -->
+    <div class="col-12 text-center p-y-32" *ngIf="!isLoading && shops.length === 0">
+        <p class="text-muted">No shops found.</p>
     </div>
 
     <!-- Shops Grid -->
-    <div class="row">
-        <div class="col-12 m-b-24">
-            <h2 class="mat-headline-2 text-start">Our Shops</h2>
-        </div>
-
-        <div class="col-12" *ngIf="isLoading">
-            <p>Loading shops...</p>
-        </div>
-
+    <div class="row" *ngIf="!isLoading && shops.length > 0">
         <div class="col-md-4 col-lg-3 m-b-24" *ngFor="let shop of shops">
-            <mat-card class="cardWithShadow position-relative h-100">
+            <mat-card class="cardWithShadow h-100">
+
+                <!-- Banner image -->
                 <img *ngIf="shop.banner_url" mat-card-image [src]="getBannerUrl(shop)"
                     style="height: 180px; object-fit: cover;">
-
                 <div *ngIf="!shop.banner_url"
-                    style="height: 180px; background-color: white; border-bottom: 1px solid #eee;">
+                    style="height: 180px; background-color: #f0f3fb; border-bottom: 1px solid #eee;">
                 </div>
+
                 <mat-card-content class="p-24 text-start">
-                    <h3 class="mat-title f-w-600 m-b-8">{{shop.name}}</h3>
+                    <!-- Status + floor inline -->
+                    <div class="d-flex align-items-center gap-2 m-b-8">
+                        <span [ngClass]="{
+                            'bg-light-success text-success': shop.status === 'OPEN',
+                            'bg-light-error text-error': shop.status === 'CLOSED',
+                            'bg-light-warning text-warning': shop.status === 'UNDER_RENOVATION' || shop.status === 'COMING_SOON'
+                        }" class="rounded f-w-600 p-6 p-y-4 f-s-11">{{ shop.status }}</span>
+                        <span class="text-muted f-s-12">· Floor {{ shop.floor }}</span>
+                    </div>
+
+                    <h3 class="mat-title f-w-600 m-b-8">{{ shop.name }}</h3>
+
+                    <!-- Category tags -->
                     <div class="d-flex flex-wrap gap-1 m-b-8">
-                        <span class="bg-light-primary text-primary rounded p-4 f-s-10 f-w-600"
-                            *ngFor="let cat of shop.category">
-                            {{cat}}
+                        <span *ngFor="let cat of shop.category"
+                            class="bg-light-primary text-primary rounded p-4 f-s-10 f-w-600">
+                            {{ cat }}
                         </span>
                     </div>
-                    <p class="mat-body-2 text-muted truncate-2">{{shop.description}}</p>
+
+                    <p class="mat-body-2 text-muted" [title]="shop.description">
+                        {{ (shop.description || '').split(' ').slice(0, 10).join(' ') }}{{ (shop.description?.split('
+                        ')?.length || 0) > 10 ? '...' : '' }}
+                    </p>
                 </mat-card-content>
+
                 <div class="p-16 p-t-0 text-end">
                     <a mat-stroked-button color="accent" [routerLink]="['/shops', shop._id]">Visit Shop</a>
                 </div>
             </mat-card>
         </div>
-
-        <div class="col-12" *ngIf="!isLoading && shops.length === 0">
-            <p>No shops available at the moment.</p>
-        </div>
     </div>
+
 </div>

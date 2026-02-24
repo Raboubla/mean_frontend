@@ -1,72 +1,101 @@
 <mat-card class="cardWithShadow">
     <mat-card-content>
-        <div class="row justify-content-between">
-            <div class="col-lg-4">
+
+        <!-- ── Filter bar ── -->
+        <div class="row align-items-center m-b-16 g-2">
+
+            <!-- Search -->
+            <div class="col-lg-4 col-md-5">
                 <mat-form-field appearance="outline" class="w-100 hide-hint">
-                    <mat-label>Search Users</mat-label>
-                    <input matInput (keyup)="applyFilter($event)" placeholder="Filter by email">
+                    <mat-label>Search by email</mat-label>
+                    <input matInput [value]="searchQuery" (input)="onSearchInput($any($event.target).value)"
+                        placeholder="john@example.com">
                     <mat-icon matSuffix>search</mat-icon>
                 </mat-form-field>
             </div>
-            <div class="col-lg-4 d-flex justify-content-end align-items-center">
-                <button mat-flat-button color="primary" (click)="openDialog('Add', {})">Add User</button>
+
+            <!-- Status filter -->
+            <div class="col-lg-2 col-md-3">
+                <mat-form-field appearance="outline" class="w-100 hide-hint">
+                    <mat-label>Status</mat-label>
+                    <mat-select [(ngModel)]="selectedStatus" (selectionChange)="onDropdownChange()">
+                        <mat-option *ngFor="let s of statusOptions" [value]="s.value">{{ s.label }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <!-- Role filter -->
+            <div class="col-lg-2 col-md-3">
+                <mat-form-field appearance="outline" class="w-100 hide-hint">
+                    <mat-label>Role</mat-label>
+                    <mat-select [(ngModel)]="selectedRole" (selectionChange)="onDropdownChange()">
+                        <mat-option *ngFor="let r of roleOptions" [value]="r.value">{{ r.label }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <!-- Spinner + Add button -->
+            <div class="col d-flex justify-content-end align-items-center gap-2">
+                <mat-spinner *ngIf="isLoading" diameter="22"></mat-spinner>
+                <button mat-flat-button color="primary" (click)="openDialog('Add', {})">
+                    <mat-icon>person_add</mat-icon> Add User
+                </button>
             </div>
         </div>
 
+        <!-- ── Table ── -->
         <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" matSort class="w-100">
 
                 <!-- Email Column -->
                 <ng-container matColumnDef="email">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14"> Email
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14">Email
                     </th>
                     <td mat-cell *matCellDef="let element" class="mat-body-1">
-                        <div class="d-flex align-items-center">
-                            <div class="m-l-16">
-                                <h6 class="mat-subtitle-1 f-s-14 f-w-600">{{element.email}}</h6>
-                            </div>
+                        <div class="m-l-16">
+                            <h6 class="mat-subtitle-1 f-s-14 f-w-600 m-0">{{ element.email }}</h6>
                         </div>
                     </td>
                 </ng-container>
 
                 <!-- Role Column -->
                 <ng-container matColumnDef="role">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14"> Role
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14">Role
                     </th>
                     <td mat-cell *matCellDef="let element" class="mat-body-1">
-                        <span
-                            class="bg-light-primary text-primary rounded f-w-600 p-6 p-y-4 f-s-12">{{element.role}}</span>
+                        <span class="bg-light-primary text-primary rounded f-w-600 p-6 p-y-4 f-s-12">
+                            {{ element.role }}
+                        </span>
                     </td>
                 </ng-container>
 
                 <!-- Shop Column -->
                 <ng-container matColumnDef="shop">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14"> Shop
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14">Shop
                     </th>
                     <td mat-cell *matCellDef="let element" class="mat-body-1">
-                        {{element.shop ? element.shop.name : (element.shopId || '-')}}
+                        {{ element.shop ? element.shop.name : (element.shopId || '—') }}
                     </td>
                 </ng-container>
 
                 <!-- Status Column -->
                 <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14"> Status
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14">Status
                     </th>
                     <td mat-cell *matCellDef="let element" class="mat-body-1">
                         <span [ngClass]="{
-                    'bg-light-success text-success': element.status === 'ACTIVE',
-                    'bg-light-error text-error': element.status === 'INACTIVE' || element.status === 'BANNED',
-                    'bg-light-warning text-warning': element.status === 'PENDING'
-                }" class="rounded f-w-600 p-6 p-y-4 f-s-12">
-                            {{element.status}}
+                            'bg-light-success text-success': element.status === 'ACTIVE',
+                            'bg-light-error text-error':     element.status === 'INACTIVE' || element.status === 'BANNED',
+                            'bg-light-warning text-warning': element.status === 'PENDING'
+                        }" class="rounded f-w-600 p-6 p-y-4 f-s-12">
+                            {{ element.status }}
                         </span>
                     </td>
                 </ng-container>
 
-
                 <!-- Actions Column -->
                 <ng-container matColumnDef="actions">
-                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14"> Actions </th>
+                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">Actions</th>
                     <td mat-cell *matCellDef="let element" class="mat-body-1">
                         <button mat-icon-button color="accent" (click)="openDialog('Update', element)"
                             matTooltip="Edit">
@@ -75,18 +104,30 @@
                         <button mat-icon-button color="warn" (click)="deleteUser(element)" matTooltip="Delete">
                             <mat-icon>delete</mat-icon>
                         </button>
-                        <button mat-icon-button (click)="toggleStatus(element)" matTooltip="Toggle Status">
-                            <mat-icon>{{element.status === 'ACTIVE' ? 'block' : 'check_circle'}}</mat-icon>
+                        <button mat-icon-button (click)="toggleStatus(element)"
+                            [matTooltip]="element.status === 'ACTIVE' ? 'Deactivate' : 'Activate'">
+                            <mat-icon>{{ element.status === 'ACTIVE' ? 'block' : 'check_circle' }}</mat-icon>
                         </button>
                     </td>
                 </ng-container>
 
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                <!-- Empty state -->
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell text-center p-y-24 text-muted" [attr.colspan]="displayedColumns.length">
+                        <mat-icon class="d-block m-auto m-b-8" style="font-size:36px;height:36px;width:36px;">
+                            person_search
+                        </mat-icon>
+                        No users match the current filters.
+                    </td>
+                </tr>
             </table>
 
-            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
-                aria-label="Select page of users"></mat-paginator>
+            <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons aria-label="Select page of users">
+            </mat-paginator>
         </div>
+
     </mat-card-content>
 </mat-card>

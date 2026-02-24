@@ -82,14 +82,15 @@
                         <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100" color="primary">
                                 <mat-label>Search Products</mat-label>
-                                <input matInput [(ngModel)]="searchText" placeholder="Ex. Smartphone">
+                                <input matInput [(ngModel)]="searchText" (ngModelChange)="onSearchChange()"
+                                    placeholder="Ex. Smartphone">
                                 <mat-icon matSuffix>search</mat-icon>
                             </mat-form-field>
                         </div>
                         <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100" color="primary">
                                 <mat-label>Category</mat-label>
-                                <mat-select [(ngModel)]="selectedCategory">
+                                <mat-select [(ngModel)]="selectedCategory" (ngModelChange)="onCategoryChange()">
                                     <mat-option *ngFor="let cat of productCategories" [value]="cat">
                                         {{cat}}
                                     </mat-option>
@@ -98,8 +99,13 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 col-lg-4 m-b-24" *ngFor="let product of filteredProducts">
+                    <!-- Loading indicator -->
+                    <div class="text-center p-y-16" *ngIf="isLoadingProds">
+                        <p class="text-muted f-s-13">Loading products...</p>
+                    </div>
+
+                    <div class="row" *ngIf="!isLoadingProds">
+                        <div class="col-md-6 col-lg-4 m-b-24" *ngFor="let product of products">
                             <mat-card class="cardWithShadow position-relative h-100">
                                 <img *ngIf="product.image_url" mat-card-image [src]="getProductImageUrl(product)"
                                     style="height: 180px; object-fit: cover;">
@@ -231,13 +237,110 @@
 
 
                         </div>
-                        <button mat-stroked-button color="warn" class="w-100">Report Issue</button>
+                        <!-- ─── Post a Review button + form ─── -->
+                        <button mat-flat-button color="primary" class="w-100 m-t-8" (click)="toggleReviewForm()">
+                            <mat-icon class="m-r-6">rate_review</mat-icon>
+                            {{ showReviewForm ? 'Cancel' : 'Post a Review' }}
+                        </button>
+
+                        <!-- inline review form -->
+                        <div *ngIf="showReviewForm" class="review-form m-t-16"
+                            style="background:#f9f9f9;border-radius:8px;padding:16px;">
+
+                            <!-- Success state -->
+                            <div *ngIf="reviewSuccess" class="text-center p-y-8">
+                                <mat-icon
+                                    style="font-size:40px;color:#13deb9;height:40px;width:40px;">check_circle</mat-icon>
+                                <p class="f-w-600 m-t-8 m-b-0" style="color:#13deb9;">Your review has been submitted!
+                                </p>
+                                <p class="text-muted f-s-13">It will appear after moderation. Thank you 🙏</p>
+                            </div>
+
+                            <!-- Form fields -->
+                            <ng-container *ngIf="!reviewSuccess">
+                                <!-- Star rating -->
+                                <div class="m-b-12">
+                                    <p class="f-s-13 f-w-600 m-b-6 m-0">Your rating *</p>
+                                    <div class="d-flex gap-1">
+                                        <span *ngFor="let s of stars" (click)="setRating(s)"
+                                            style="cursor:pointer;font-size:26px;line-height:1;transition:transform 0.1s"
+                                            [style.transform]="s <= reviewForm.rating ? 'scale(1.25)' : 'scale(1)'"
+                                            [style.color]="s <= reviewForm.rating ? '#ffae1f' : '#ccc'">
+                                            ★
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Name -->
+                                <mat-form-field appearance="outline" class="w-100 hide-hint m-b-8" color="primary">
+                                    <mat-label>Your name *</mat-label>
+                                    <input matInput [(ngModel)]="reviewForm.customer_name" placeholder="John Doe" />
+                                </mat-form-field>
+
+                                <!-- Comment -->
+                                <mat-form-field appearance="outline" class="w-100 hide-hint m-b-12" color="primary">
+                                    <mat-label>Comment (optional)</mat-label>
+                                    <textarea matInput [(ngModel)]="reviewForm.comment" rows="3"
+                                        placeholder="Share your experience..."></textarea>
+                                </mat-form-field>
+
+                                <!-- Error -->
+                                <p *ngIf="reviewError" class="text-error f-s-13 m-b-8">{{ reviewError }}</p>
+
+                                <!-- Submit -->
+                                <button mat-flat-button color="accent" class="w-100" (click)="submitReview()"
+                                    [disabled]="reviewLoading">
+                                    <mat-spinner *ngIf="reviewLoading" diameter="18"
+                                        style="display:inline-block;margin-right:8px;"></mat-spinner>
+                                    {{ reviewLoading ? 'Submitting…' : 'Submit Review' }}
+                                </button>
+                            </ng-container>
+                        </div>
 
                         <ng-template #noContact>
                             <p class="text-muted f-s-14">No contact information available.</p>
                         </ng-template>
                     </mat-card-content>
                 </mat-card>
+
+                <!-- ─── Approved Reviews ─── -->
+                <ng-container *ngIf="displayedReviews.length > 0">
+                    <h6 class="f-w-700 m-t-24 m-b-12 d-flex align-items-center gap-1">
+                        <mat-icon style="font-size:18px;height:18px;width:18px;color:#5d87ff;">reviews</mat-icon>
+                        What customers say
+                    </h6>
+                    <div *ngFor="let review of displayedReviews" class="m-b-12">
+                        <mat-card class="cardWithShadow" style="border-left:3px solid #5d87ff;">
+                            <mat-card-content class="p-16">
+                                <!-- Stars -->
+                                <div class="d-flex m-b-6">
+                                    <span *ngFor="let s of starsArray(review.rating)"
+                                        style="color:#ffae1f;font-size:16px;line-height:1;">★</span>
+                                    <span *ngFor="let s of starsArray(5 - review.rating)"
+                                        style="color:#ddd;font-size:16px;line-height:1;">★</span>
+                                </div>
+                                <!-- Comment -->
+                                <p class="text-muted f-s-13 m-b-8"
+                                    style="display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">
+                                    "{{ review.comment || '—' }}"
+                                </p>
+                                <!-- Reviewer -->
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div style="width:26px;height:26px;border-radius:50%;background:#5d87ff;color:#fff;
+                                                    display:flex;align-items:center;justify-content:center;
+                                                    font-size:12px;font-weight:700;flex-shrink:0;">
+                                            {{ review.customer_name?.charAt(0)?.toUpperCase() }}
+                                        </div>
+                                        <span class="f-s-13 f-w-600">{{ review.customer_name }}</span>
+                                    </div>
+                                    <span class="text-muted f-s-11">{{ review.created_at | date:'mediumDate' }}</span>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+                </ng-container>
+
             </div>
         </div>
     </div>

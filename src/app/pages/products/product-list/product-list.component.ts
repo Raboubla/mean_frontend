@@ -1,8 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms';
 import { ProductService, Product } from '../../../services/product-services/product.service';
 import { AppProductDialogComponent } from '../product-dialog/product-dialog.component';
 import { MatCardModule } from '@angular/material/card';
@@ -12,13 +15,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'app-products',
     standalone: true,
     imports: [
         CommonModule,
+        FormsModule,
         MatTableModule,
         MatPaginatorModule,
         MatSortModule,
@@ -28,44 +34,80 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         MatButtonModule,
         MatFormFieldModule,
         MatInputModule,
-        MatTooltipModule
+        MatSelectModule,
+        MatTooltipModule,
+        MatProgressSpinnerModule,
     ],
     templateUrl: './product-list.component.html',
 })
-export class AppProductComponent implements OnInit {
+export class AppProductComponent implements OnInit, OnDestroy {
     displayedColumns: string[] = ['name', 'price', 'category', 'shop', 'status', 'actions'];
     dataSource: MatTableDataSource<Product>;
-    totalProducts = 0;
-    pageSize = 10;
-    pageIndex = 0;
+    isLoading = false;
 
-    @ViewChild(MatPaginator) paginator: MatPaginator;
-    @ViewChild(MatSort) sort: MatSort;
+    // Filter state
+    searchQuery = '';
+    selectedCategory = '';
+
+    readonly categoryOptions = [
+        { value: '', label: 'All Categories' },
+        { value: 'ELECTRONICS', label: 'Electronics' },
+        { value: 'CLOTHING', label: 'Clothing' },
+        { value: 'HOME', label: 'Home' },
+        { value: 'FOOD', label: 'Food' },
+        { value: 'TOYS', label: 'Toys' },
+        { value: 'BEAUTY', label: 'Beauty' },
+        { value: 'OTHER', label: 'Other' },
+    ];
+
+    @ViewChild(MatPaginator) paginator!: MatPaginator;
+    @ViewChild(MatSort) sort!: MatSort;
+
+    private searchSubject = new Subject<string>();
+    private destroy$ = new Subject<void>();
 
     constructor(public dialog: MatDialog, private productService: ProductService) {
         this.dataSource = new MatTableDataSource<Product>();
     }
 
     ngOnInit(): void {
-        this.loadProducts();
+        this.searchSubject.pipe(
+            debounceTime(350),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(() => this.fetchProducts());
+        this.fetchProducts();
     }
 
-    loadProducts() {
-        this.productService.getAllProducts().subscribe({ // Fetch all products for admin table
-            next: (res: any) => {
-                // Check structure: { products: [], total: ... } OR just []
-                const products = res.products || res;
-                this.dataSource.data = Array.isArray(products) ? products.map((p: any) => ({
-                    ...p,
-                    price: this.formatPrice(p.price)
-                })) : [];
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
 
-                // Client-side pagination
+    onSearchInput(value: string): void {
+        this.searchQuery = value;
+        this.searchSubject.next(value);
+    }
+
+    onCategoryChange(): void {
+        this.fetchProducts();
+    }
+
+    fetchProducts(): void {
+        this.isLoading = true;
+        this.productService.searchAdminProducts(
+            this.searchQuery || undefined,
+            this.selectedCategory || undefined
+        ).subscribe({
+            next: (res) => {
+                this.dataSource.data = (res.products || []).map((p: any) => ({
+                    ...p, price: this.formatPrice(p.price)
+                }));
                 this.dataSource.paginator = this.paginator;
                 this.dataSource.sort = this.sort;
-                this.totalProducts = this.dataSource.data.length;
+                this.isLoading = false;
             },
-            error: (err) => console.error('Error fetching products', err)
+            error: (err) => { console.error('Error fetching products', err); this.isLoading = false; }
         });
     }
 
@@ -108,19 +150,7 @@ export class AppProductComponent implements OnInit {
     }
 
 
-    onPageChange(event: PageEvent) {
-        this.pageIndex = event.pageIndex;
-        this.pageSize = event.pageSize;
-        this.loadProducts();
-    }
 
-    applyFilter(event: Event) {
-        const filterValue = (event.target as HTMLInputElement).value;
-        this.dataSource.filter = filterValue.trim().toLowerCase();
-        if (this.dataSource.paginator) {
-            this.dataSource.paginator.firstPage();
-        }
-    }
 
     openDialog(action: string, obj: any): void {
         obj.action = action;
@@ -131,16 +161,14 @@ export class AppProductComponent implements OnInit {
         });
 
         dialogRef.afterClosed().subscribe((result) => {
-            if (result && result.event !== 'Cancel') {
-                this.loadProducts();
-            }
+            if (result && result.event !== 'Cancel') this.fetchProducts();
         });
     }
 
     deleteProduct(obj: any) {
         if (confirm('Are you sure you want to delete ' + obj.name + '?')) {
             this.productService.deleteProduct(obj._id).subscribe({
-                next: () => this.loadProducts(),
+                next: () => this.fetchProducts(),
                 error: (err) => console.error('Error deleting product', err)
             });
         }
@@ -148,7 +176,7 @@ export class AppProductComponent implements OnInit {
 
     toggleStatus(obj: any) {
         this.productService.toggleProductStatus(obj._id).subscribe({
-            next: () => this.loadProducts(), // Reload to see status change
+            next: () => this.fetchProducts(),
             error: (err) => console.error('Error toggling status', err)
         });
     }
