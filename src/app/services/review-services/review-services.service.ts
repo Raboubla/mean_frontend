@@ -27,8 +27,16 @@ export class ReviewService {
     return this.http.post(this.apiUrl, reviewData);
   }
 
-  getAllReviews(): Observable<Review[]> {
-    return this.http.get<Review[]>(this.apiUrl);
+  getAllReviews(): Observable<any> {
+    return this.http.get<any>(this.apiUrl);
+  }
+
+  // Admin: backend search by customer_name/comment + optional status filter
+  searchReviews(query?: string, status?: string): Observable<any> {
+    let params = new HttpParams();
+    if (query) params = params.set('query', query);
+    if (status) params = params.set('status', status);
+    return this.http.get<any>(this.apiUrl, { params });
   }
 
   getReviewById(id: string): Observable<Review> {

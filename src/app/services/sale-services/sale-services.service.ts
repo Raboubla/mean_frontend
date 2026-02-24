@@ -27,8 +27,16 @@ export class SaleService {
     return this.http.post(this.apiUrl, saleData);
   }
 
-  getAllSales(): Observable<Sale[]> {
-    return this.http.get<Sale[]>(this.apiUrl);
+  getAllSales(): Observable<any> {
+    return this.http.get<any>(this.apiUrl);
+  }
+
+  // Admin: backend search by product name + optional shopId filter
+  searchSales(query?: string, shopId?: string): Observable<any> {
+    let params = new HttpParams();
+    if (query) params = params.set('query', query);
+    if (shopId) params = params.set('shopId', shopId);
+    return this.http.get<any>(this.apiUrl, { params });
   }
 
   getSaleById(id: string): Observable<Sale> {
