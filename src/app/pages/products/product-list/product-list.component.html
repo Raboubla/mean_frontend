@@ -1,14 +1,27 @@
 <mat-card class="cardWithShadow">
     <mat-card-content>
-        <div class="row justify-content-between">
-            <div class="col-lg-4">
+        <div class="row align-items-center m-b-4 g-2">
+            <!-- Search -->
+            <div class="col-lg-4 col-md-5">
                 <mat-form-field appearance="outline" class="w-100 hide-hint">
                     <mat-label>Search Products</mat-label>
-                    <input matInput (keyup)="applyFilter($event)" placeholder="Filter by name">
+                    <input matInput [value]="searchQuery" (input)="onSearchInput($any($event.target).value)"
+                        placeholder="Name or description...">
                     <mat-icon matSuffix>search</mat-icon>
                 </mat-form-field>
             </div>
-            <div class="col-lg-4 d-flex justify-content-end align-items-center">
+            <!-- Category filter -->
+            <div class="col-lg-2 col-md-3">
+                <mat-form-field appearance="outline" class="w-100 hide-hint">
+                    <mat-label>Category</mat-label>
+                    <mat-select [(ngModel)]="selectedCategory" (selectionChange)="onCategoryChange()">
+                        <mat-option *ngFor="let c of categoryOptions" [value]="c.value">{{ c.label }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <!-- Spinner + Add button -->
+            <div class="col d-flex justify-content-end align-items-center gap-2">
+                <mat-spinner *ngIf="isLoading" diameter="22"></mat-spinner>
                 <button mat-flat-button color="primary" (click)="openDialog('Add', {})">Add Product</button>
             </div>
         </div>
@@ -110,8 +123,7 @@
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
 
-            <mat-paginator [length]="totalProducts" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 20]"
-                (page)="onPageChange($event)" showFirstLastButtons aria-label="Select page of products">
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of products">
             </mat-paginator>
         </div>
     </mat-card-content>

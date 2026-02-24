@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,10 +10,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ShopService, Shop } from '../../../services/shop-services/shop.service';
 import { ProductService, Product } from '../../../services/product-services/product.service';
+import { ReviewService } from '../../../services/review-services/review-services.service';
 import { environment } from 'src/environments/environment';
-
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 @Component({
     selector: 'app-client-shop-details',
     standalone: true,
@@ -28,32 +30,53 @@ import { environment } from 'src/environments/environment';
         MatInputModule,
         MatSelectModule,
         MatTooltipModule,
-        FormsModule
+        FormsModule,
+        MatProgressSpinnerModule
     ],
     templateUrl: './shop-details.component.html',
 })
-export class ClientShopDetailsComponent implements OnInit {
+export class ClientShopDetailsComponent implements OnInit, OnDestroy {
     shop: Shop | null = null;
-    products: Product[] = [];
+    allProducts: Product[] = [];   // full list (for category dropdown)
+    products: Product[] = [];   // displayed (filtered) list
     isLoading = true;
+    isLoadingProds = false;
 
-    searchText: string = '';
-    selectedCategory: string = 'All';
+    // Approved reviews (3 random)
+    displayedReviews: any[] = [];
+
+    searchText = '';
+    selectedCategory = 'All';
+    shopId = '';
+
+    private searchSubject = new Subject<string>();
 
     constructor(
         private route: ActivatedRoute,
         private shopService: ShopService,
-        private productService: ProductService
+        private productService: ProductService,
+        private reviewService: ReviewService
     ) { }
 
     ngOnInit(): void {
-        const shopId = this.route.snapshot.paramMap.get('id');
-        if (shopId) {
-            this.fetchShop(shopId);
-            this.fetchProducts(shopId);
+        this.shopId = this.route.snapshot.paramMap.get('id') || '';
+        if (this.shopId) {
+            this.fetchShop(this.shopId);
+            this.fetchProducts();
+            this.fetchApprovedReviews();
         } else {
             this.isLoading = false;
         }
+
+        // Debounce text search — calls backend 400ms after typing stops
+        this.searchSubject.pipe(
+            debounceTime(400),
+            distinctUntilChanged()
+        ).subscribe(() => this.fetchProducts());
+    }
+
+    ngOnDestroy(): void {
+        this.searchSubject.complete();
     }
 
     fetchShop(id: string) {
@@ -75,28 +98,97 @@ export class ClientShopDetailsComponent implements OnInit {
         });
     }
 
-    fetchProducts(shopId: string) {
-        this.productService.getProductsByShop(shopId).subscribe({
+    fetchProducts(): void {
+        if (!this.shopId) return;
+        this.isLoadingProds = true;
+        this.productService.getClientProductsByShop(
+            this.shopId,
+            this.searchText.trim() || undefined,
+            this.selectedCategory !== 'All' ? this.selectedCategory : undefined
+        ).subscribe({
             next: (res: any) => {
                 this.products = res.products || [];
+                // Populate category dropdown from the initial full load
+                if (!this.searchText && this.selectedCategory === 'All') {
+                    this.allProducts = this.products;
+                }
+                this.isLoadingProds = false;
             },
             error: (err) => {
                 console.error('Error fetching products', err);
+                this.isLoadingProds = false;
             }
         });
     }
 
-    get filteredProducts(): Product[] {
-        return this.products.filter(product => {
-            const matchesSearch = product.name.toLowerCase().includes(this.searchText.toLowerCase());
-            const matchesCategory = this.selectedCategory === 'All' || product.category === this.selectedCategory;
-            return matchesSearch && matchesCategory;
+    onSearchChange(): void { this.searchSubject.next(this.searchText); }
+    onCategoryChange(): void { this.fetchProducts(); }
+
+    get productCategories(): string[] {
+        const cats = new Set(this.allProducts.map(p => p.category));
+        return ['All', ...Array.from(cats)];
+    }
+
+    fetchApprovedReviews(): void {
+        this.reviewService.getApprovedReviewsByShop(this.shopId).subscribe({
+            next: (res: any) => {
+                const all: any[] = res.reviews || [];
+                // Fisher-Yates shuffle
+                for (let i = all.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [all[i], all[j]] = [all[j], all[i]];
+                }
+                this.displayedReviews = all.slice(0, 3);
+            },
+            error: (err) => console.error('Reviews error', err)
         });
     }
 
-    get productCategories(): string[] {
-        const categories = new Set(this.products.map(p => p.category));
-        return ['All', ...Array.from(categories)];
+    starsArray(n: number): number[] { return Array(n).fill(0); }
+
+    // ──────────── Review form ────────────
+    showReviewForm = false;
+    reviewLoading = false;
+    reviewSuccess = false;
+    reviewError = '';
+
+    reviewForm = {
+        customer_name: '',
+        rating: 0,
+        comment: ''
+    };
+
+    stars = [1, 2, 3, 4, 5];
+
+    setRating(n: number): void { this.reviewForm.rating = n; }
+
+    toggleReviewForm(): void {
+        this.showReviewForm = !this.showReviewForm;
+        this.reviewSuccess = false;
+        this.reviewError = '';
+    }
+
+    submitReview(): void {
+        if (!this.reviewForm.customer_name.trim() || !this.reviewForm.rating) {
+            this.reviewError = 'Please fill in your name and select a rating.';
+            return;
+        }
+        this.reviewLoading = true;
+        this.reviewError = '';
+        this.reviewService.createReview({
+            ...this.reviewForm,
+            shop: this.shopId
+        }).subscribe({
+            next: () => {
+                this.reviewSuccess = true;
+                this.reviewLoading = false;
+                this.reviewForm = { customer_name: '', rating: 0, comment: '' };
+            },
+            error: (err) => {
+                this.reviewError = err.error?.message || 'Failed to submit review. Please try again.';
+                this.reviewLoading = false;
+            }
+        });
     }
 
     bannerColor: string = '#333';

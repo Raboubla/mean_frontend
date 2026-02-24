@@ -41,6 +41,16 @@ export class UserService {
     return this.http.get<{ count: number; users: User[] }>(this.apiUrl);
   }
 
+  // Recherche backend avec filtres combinés (query + status + role)
+  searchUsers(query?: string, status?: string, role?: string): Observable<{ count: number; users: User[] }> {
+    let params = new HttpParams();
+    if (query) params = params.set('query', query);
+    if (status) params = params.set('status', status);
+    if (role) params = params.set('role', role);
+    return this.http.get<{ count: number; users: User[] }>(this.apiUrl, { params });
+  }
+
+
   // Récupère un utilisateur par ID (GET /api/users/{id})
   getUserById(id: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${id}`);

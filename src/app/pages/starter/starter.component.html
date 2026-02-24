@@ -49,8 +49,123 @@
   }
 </div>
 
+<!-- =========== LEADERBOARD ROW =========== -->
+<div class="row m-b-32">
+
+  <!-- 1. Top 3 Shops by Views -->
+  <div class="col-lg-4 m-b-24">
+    <mat-card class="cardWithShadow h-100">
+      <mat-card-content class="p-24">
+        <div class="d-flex align-items-center gap-2 m-b-20">
+          <mat-icon style="color:#49beff">visibility</mat-icon>
+          <h5 class="m-0 f-w-600">Top Shops by Views</h5>
+        </div>
+
+        <div *ngIf="isLoadingRanks" class="text-center p-y-16">
+          <mat-spinner diameter="24"></mat-spinner>
+        </div>
+
+        <div *ngIf="!isLoadingRanks && topShopsByViews.length === 0" class="text-muted f-s-13 text-center">No data</div>
+
+        <div *ngIf="!isLoadingRanks" class="leaderboard-list">
+          <div *ngFor="let shop of topShopsByViews; let i = index"
+            class="d-flex align-items-center justify-content-between p-y-10 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <span class="rank-badge f-w-700 f-s-13"
+                [style.color]="i===0?'#ffc107':i===1?'#9e9e9e':i===2?'#cd7f32':'#888'">
+                {{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#'+(i+1) }}
+              </span>
+              <span class="f-s-14 f-w-500">{{ shop.name }}</span>
+            </div>
+            <span class="badge bg-light-primary text-primary rounded-pill f-s-12 f-w-600 p-x-10 p-y-4">
+              {{ shop.view_count | number }} views
+            </span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- 2. Top 5 Shops by Product Count -->
+  <div class="col-lg-4 m-b-24">
+    <mat-card class="cardWithShadow h-100">
+      <mat-card-content class="p-24">
+        <div class="d-flex align-items-center gap-2 m-b-20">
+          <mat-icon style="color:#13deb9">inventory_2</mat-icon>
+          <h5 class="m-0 f-w-600">Top Shops by Products</h5>
+        </div>
+
+        <div *ngIf="isLoadingRanks" class="text-center p-y-16">
+          <mat-spinner diameter="24"></mat-spinner>
+        </div>
+
+        <div *ngIf="!isLoadingRanks && topShopsByProducts.length === 0" class="text-muted f-s-13 text-center">No data
+        </div>
+
+        <div *ngIf="!isLoadingRanks" class="leaderboard-list">
+          <div *ngFor="let shop of topShopsByProducts; let i = index"
+            class="d-flex align-items-center justify-content-between p-y-10 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <span class="f-w-700 f-s-13" [style.color]="i===0?'#ffc107':i===1?'#9e9e9e':i===2?'#cd7f32':'#888'">
+                {{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#'+(i+1) }}
+              </span>
+              <a class="f-s-14 f-w-500 text-decoration-none text-dark" [routerLink]="['/shops', shop.shopId]">{{
+                shop.shopName }}</a>
+            </div>
+            <span class="badge bg-light-success text-success rounded-pill f-s-12 f-w-600 p-x-10 p-y-4">
+              {{ shop.productCount }} products
+            </span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- 3. Top 5 Products by Sales -->
+  <div class="col-lg-4 m-b-24">
+    <mat-card class="cardWithShadow h-100">
+      <mat-card-content class="p-24">
+        <div class="d-flex align-items-center gap-2 m-b-20">
+          <mat-icon style="color:#fa896b">point_of_sale</mat-icon>
+          <h5 class="m-0 f-w-600">Top Products by Sales</h5>
+        </div>
+
+        <div *ngIf="isLoadingRanks" class="text-center p-y-16">
+          <mat-spinner diameter="24"></mat-spinner>
+        </div>
+
+        <div *ngIf="!isLoadingRanks && topProductsBySales.length === 0" class="text-muted f-s-13 text-center">No data
+        </div>
+
+        <div *ngIf="!isLoadingRanks" class="leaderboard-list">
+          <div *ngFor="let product of topProductsBySales; let i = index"
+            class="d-flex align-items-center justify-content-between p-y-10 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <span class="f-w-700 f-s-13" [style.color]="i===0?'#ffc107':i===1?'#9e9e9e':i===2?'#cd7f32':'#888'">
+                {{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#'+(i+1) }}
+              </span>
+              <div class="d-flex flex-column">
+                <span class="f-s-14 f-w-500">{{ product.productName }}</span>
+                <span class="f-s-11 text-muted">{{ product.category }}</span>
+              </div>
+            </div>
+            <div class="text-end">
+              <div class="badge bg-light-error text-error rounded-pill f-s-12 f-w-600 p-x-10 p-y-4">
+                {{ product.totalQty | number }} sold
+              </div>
+              <div class="f-s-11 text-muted m-t-2">{{ product.totalRevenue | currency }}</div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+</div>
+<!-- =========== END LEADERBOARD =========== -->
+
 <!-- ================= EXISTING DASHBOARD WIDGETS ================= -->
-<div class="row">
+<!-- <div class="row">
   <div class="col-lg-8">
     <app-revenue-forecast></app-revenue-forecast>
   </div>
@@ -73,4 +188,4 @@
   <div class="col-12">
     <app-blog-card></app-blog-card>
   </div>
-</div>
+</div> -->

@@ -40,6 +40,14 @@ export class ProductService {
         return this.http.get<{ products: Product[], count: number }>(this.apiUrl);
     }
 
+    // Admin: backend search by name/desc + optional category filter
+    searchAdminProducts(query?: string, category?: string): Observable<{ products: Product[], count: number }> {
+        let params = new HttpParams();
+        if (query) params = params.set('query', query);
+        if (category) params = params.set('category', category);
+        return this.http.get<{ products: Product[], count: number }>(this.apiUrl, { params });
+    }
+
     // Client-facing: search + category + infinite scroll pagination
     getClientProducts(page: number = 1, limit: number = 10, query?: string, category?: string): Observable<{
         products: Product[]; total: number; pages: number; hasMore: boolean; count: number;
@@ -50,6 +58,20 @@ export class ProductService {
         if (query) params = params.set('query', query);
         if (category) params = params.set('category', category);
         return this.http.get<{ products: Product[]; total: number; pages: number; hasMore: boolean; count: number }>(
+            `${this.apiUrl}/client`, { params }
+        );
+    }
+
+    // Client-facing: products scoped to a specific shop with backend search + category
+    getClientProductsByShop(shopId: string, query?: string, category?: string): Observable<{
+        products: Product[]; total: number; count: number;
+    }> {
+        let params = new HttpParams()
+            .set('shopId', shopId)
+            .set('limit', '400');             // generous limit — no pagination needed per shop
+        if (query) params = params.set('query', query);
+        if (category && category !== 'All') params = params.set('category', category);
+        return this.http.get<{ products: Product[]; total: number; count: number }>(
             `${this.apiUrl}/client`, { params }
         );
     }
