@@ -49,7 +49,7 @@ export class ProductService {
     }
 
     // Client-facing: search + category + infinite scroll pagination
-    getClientProducts(page: number = 1, limit: number = 10, query?: string, category?: string): Observable<{
+    getClientProducts(page: number = 1, limit: number = 10, query?: string, category?: string, minPrice?: number, maxPrice?: number): Observable<{
         products: Product[]; total: number; pages: number; hasMore: boolean; count: number;
     }> {
         let params = new HttpParams()
@@ -57,6 +57,13 @@ export class ProductService {
             .set('limit', limit.toString());
         if (query) params = params.set('query', query);
         if (category) params = params.set('category', category);
+        // --- AJOUT DES FILTRES DE PRIX ICI ---
+        if (minPrice !== undefined && minPrice !== null) {
+            params = params.set('minPrice', minPrice.toString());
+        }
+        if (maxPrice !== undefined && maxPrice !== null) {
+            params = params.set('maxPrice', maxPrice.toString());
+        }
         return this.http.get<{ products: Product[]; total: number; pages: number; hasMore: boolean; count: number }>(
             `${this.apiUrl}/client`, { params }
         );
@@ -108,10 +115,17 @@ export class ProductService {
     }
 
     // Client-facing promotions: search + category filter
-    getClientPromotions(query?: string, category?: string): Observable<{ products: Product[], count: number }> {
+    getClientPromotions(query?: string, category?: string, minPrice?: number, maxPrice?: number): Observable<{ products: Product[], count: number }> {
         let params = new HttpParams();
         if (query) params = params.set('query', query);
         if (category) params = params.set('category', category);
+        // --- AJOUT DES FILTRES DE PRIX ICI ---
+        if (minPrice !== undefined && minPrice !== null) {
+            params = params.set('minPrice', minPrice.toString());
+        }
+        if (maxPrice !== undefined && maxPrice !== null) {
+            params = params.set('maxPrice', maxPrice.toString());
+        }
         return this.http.get<{ products: Product[], count: number }>(`${this.apiUrl}/client/promotions`, { params });
     }
 

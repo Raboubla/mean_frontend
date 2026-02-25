@@ -14,7 +14,17 @@
                 </button>
                 }
             </div>
-
+            <div class="price-filters d-flex align-items-center gap-2 m-l-16">
+                <div class="price-input-group">
+                    <input type="number" class="price-input" placeholder="Min $" [(ngModel)]="minPrice"
+                        (ngModelChange)="onPriceChange()">
+                </div>
+                <span class="text-muted">-</span>
+                <div class="price-input-group">
+                    <input type="number" class="price-input" placeholder="Max $" [(ngModel)]="maxPrice"
+                        (ngModelChange)="onPriceChange()">
+                </div>
+            </div>
             <div class="total-label" *ngIf="!isLoading">
                 {{ total }} product{{ total !== 1 ? 's' : '' }} found
             </div>
@@ -385,5 +395,60 @@
     /* ===== Sentinel ===== */
     .scroll-sentinel {
         height: 1px;
+    }
+
+    /* Style global pour les groupes d'inputs de prix */
+    .price-filters {
+        .price-input {
+            width: 100px;
+            height: 38px;
+            padding: 0 12px;
+            font-size: 14px;
+
+            /* CONTOUR : On définit une bordure solide et visible */
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #ffffff;
+            color: #333;
+            transition: all 0.3s ease;
+            outline: none;
+
+            &::placeholder {
+                color: #999;
+            }
+
+            /* État au survol (hover) */
+            &:hover {
+                border-color: #bdbdbd;
+            }
+
+            /* État au clic (focus) */
+            &:focus {
+                border-color: #3f51b5;
+                box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.1);
+            }
+        }
+
+        /* Style spécifique pour la page PROMOTION (si fond sombre) */
+        span.text-white {
+            margin: 0 4px;
+            font-weight: bold;
+        }
+
+        span.text-muted {
+            margin: 0 4px;
+            font-weight: bold;
+        }
+    }
+
+    /* Supprime les flèches pour le type="number" */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type=number] {
+        -moz-appearance: textfield;
     }
 </style>

@@ -38,6 +38,8 @@ export class ClientProductsComponent implements OnInit, AfterViewInit, OnDestroy
     readonly limit = 10;
 
     searchQuery = '';
+    minPrice: number | null = null; // new
+    maxPrice: number | null = null; // new
     activeCategory = 'ALL';
     categories = CATEGORIES;
 
@@ -55,7 +57,7 @@ export class ClientProductsComponent implements OnInit, AfterViewInit, OnDestroy
         // Debounce typing — only hits backend 400ms after user stops typing
         this.searchSubject.pipe(
             debounceTime(400),
-            distinctUntilChanged()
+            // distinctUntilChanged()
         ).subscribe(() => this.loadProducts(true));
     }
 
@@ -96,7 +98,14 @@ export class ClientProductsComponent implements OnInit, AfterViewInit, OnDestroy
         const category = this.activeCategory === 'ALL' ? undefined : this.activeCategory;
         const query = this.searchQuery.trim() || undefined;
 
-        this.productService.getClientProducts(this.page, this.limit, query, category).subscribe({
+        this.productService.getClientProducts(
+            this.page,
+            this.limit,
+            query,
+            category,
+            this.minPrice ?? undefined,
+            this.maxPrice ?? undefined
+        ).subscribe({
             next: (res) => {
                 this.products = reset ? res.products : [...this.products, ...res.products];
                 this.total = res.total;
@@ -122,6 +131,11 @@ export class ClientProductsComponent implements OnInit, AfterViewInit, OnDestroy
         this.searchSubject.next(this.searchQuery);
     }
 
+    // Nouvelle méthode pour les prix
+    onPriceChange(): void {
+        this.searchSubject.next(`price_${this.minPrice}_${this.maxPrice}`); // On déclenche le flux de recherche
+    }
+
     selectCategory(cat: string): void {
         if (this.activeCategory === cat) return;
         this.activeCategory = cat;
@@ -130,6 +144,8 @@ export class ClientProductsComponent implements OnInit, AfterViewInit, OnDestroy
 
     clearSearch(): void {
         this.searchQuery = '';
+        this.minPrice = null;
+        this.maxPrice = null;
         this.loadProducts(true);
     }
 
