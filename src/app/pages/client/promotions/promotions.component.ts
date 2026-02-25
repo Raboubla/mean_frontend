@@ -33,6 +33,9 @@ export class ClientPromotionsComponent implements OnInit, OnDestroy {
     activeCategory = 'ALL';
     categories = CATEGORIES;
 
+    minPrice: number | null = null;
+    maxPrice: number | null = null;
+
     private searchSubject = new Subject<string>();
 
     constructor(private productService: ProductService) { }
@@ -42,7 +45,7 @@ export class ClientPromotionsComponent implements OnInit, OnDestroy {
 
         this.searchSubject.pipe(
             debounceTime(400),
-            distinctUntilChanged()
+            // distinctUntilChanged()
         ).subscribe(() => this.loadPromotions());
     }
 
@@ -50,22 +53,27 @@ export class ClientPromotionsComponent implements OnInit, OnDestroy {
         this.searchSubject.complete();
     }
 
+    onPriceChange(): void {
+        this.searchSubject.next(`price_update_${this.minPrice}_${this.maxPrice}`);
+    }
+
     loadPromotions(): void {
         this.isLoading = true;
         const category = this.activeCategory === 'ALL' ? undefined : this.activeCategory;
         const query = this.searchQuery.trim() || undefined;
 
-        this.productService.getClientPromotions(query, category).subscribe({
-            next: (res) => {
-                this.products = res.products;
-                this.total = res.count;
-                this.isLoading = false;
-            },
-            error: (err) => {
-                console.error('Error loading promotions', err);
-                this.isLoading = false;
-            }
-        });
+        this.productService.getClientPromotions(query, category, this.minPrice ?? undefined,
+            this.maxPrice ?? undefined).subscribe({
+                next: (res) => {
+                    this.products = res.products;
+                    this.total = res.count;
+                    this.isLoading = false;
+                },
+                error: (err) => {
+                    console.error('Error loading promotions', err);
+                    this.isLoading = false;
+                }
+            });
     }
 
     onSearchChange(): void {
