@@ -1,4 +1,4 @@
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:5000/api' // url for the api
+    apiUrl: 'https://mean-backend-6ksw.onrender.com/api' // url for the api
 };
