@@ -1,0 +1,112 @@
+<div class="shop-details-container" *ngIf="!isLoading">
+    <div *ngIf="shop; else emptyShopState">
+        <!-- Banner -->
+        <div class="shop-banner position-relative overflow-hidden" [style.background-color]="bannerColor">
+            <div class="banner-image"
+                [style.backgroundImage]="'url(' + (getBannerUrl(shop) || 'assets/images/backgrounds/login-bg.jpg') + ')'"
+                style="height: 300px; background-size: cover; background-position: center; position: relative; z-index: 1;">
+
+                <div class="overlay"
+                    style="background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.9) 100%); position: absolute; inset: 0; z-index: 2;">
+
+                </div>
+            </div>
+
+            <div class="banner-content position-absolute bottom-0 start-0 w-100 text-white p-24" style="z-index: 3;">
+                <div class="d-flex justify-content-between align-items-end">
+                    <div>
+                        <h1 class="mat-headline-1 f-w-900 m-b-8" style="font-size: 2.5rem;">{{shop.name}}</h1>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="badge" [ngClass]="{
+                            'bg-success': shop.status === 'OPEN',
+                            'bg-danger': shop.status === 'CLOSED',
+                            'bg-warning': shop.status === 'COMING_SOON',
+                            'bg-info': shop.status === 'UNDER_RENOVATION'
+                        }">{{shop.status}}</span>
+                            <span>| Floor {{shop.floor}}</span>
+                            <span>| Views: {{shop.view_count}}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <button mat-flat-button color="accent" (click)="editShop()">
+                            <mat-icon>edit</mat-icon> Customize Shop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop Content -->
+        <div class="row m-t-24">
+            <!-- left -->
+            <div class="col-lg-8">
+                <mat-card class="cardWithShadow m-b-24">
+                    <mat-card-content class="p-24">
+                        <h3 class="mat-title f-w-700 m-b-16">About My Shop</h3>
+                        <p class="mat-body-1 text-muted">{{shop.description || 'No description provided.'}}</p>
+                        <div class="m-t-16">
+                            <mat-chip-listbox>
+                                <mat-chip-option color="primary" selected
+                                    *ngFor="let cat of shop.category">{{cat}}</mat-chip-option>
+                            </mat-chip-listbox>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- Optional placeholder for "My Products" -->
+                <mat-card class="cardWithShadow">
+                    <mat-card-content class="p-24 text-center">
+                        <mat-icon class="icon-40 text-muted m-b-16">inventory_2</mat-icon>
+                        <h3>Manage Products</h3>
+                        <p class="text-muted">You can manage the products of your shop through the Products menu.</p>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+
+            <!-- right -->
+            <div class="col-lg-4">
+                <mat-card class="cardWithShadow m-b-24">
+                    <mat-card-content class="p-24">
+                        <h3 class="mat-title f-w-600 m-b-16">Contact</h3>
+                        <div *ngIf="shop.contact; else noContact">
+                            <div class="d-flex align-items-center m-b-12" *ngIf="shop.contact.phone">
+                                <mat-icon class="text-primary m-r-8">phone</mat-icon>
+                                <span>{{shop.contact.phone}}</span>
+                            </div>
+                            <div class="d-flex align-items-center m-b-12" *ngIf="shop.contact.email">
+                                <mat-icon class="text-primary m-r-8">email</mat-icon>
+                                <span>{{shop.contact.email}}</span>
+                            </div>
+                        </div>
+                        <ng-template #noContact>
+                            <p class="text-muted">No contact info.</p>
+                        </ng-template>
+                    </mat-card-content>
+                </mat-card>
+
+                <mat-card class="cardWithShadow">
+                    <mat-card-content class="p-24">
+                        <h3 class="mat-title f-w-600 m-b-16">Opening Hours</h3>
+                        <div *ngFor="let hours of shop.opening_hours"
+                            class="d-flex justify-content-between p-y-8 border-bottom">
+                            <span class="f-w-500">{{hours.day}}</span>
+                            <span class="text-muted">{{hours.open}} - {{hours.close}}</span>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #emptyShopState>
+        <div class="text-center p-y-48">
+            <h2>No shop assigned</h2>
+            <p class="text-muted">Your account is not assigned to any shop yet. Please contact the main administrator.
+            </p>
+        </div>
+    </ng-template>
+</div>
+
+<div *ngIf="isLoading" class="text-center p-y-48">
+    <p>Loading your shop...</p>
+</div>

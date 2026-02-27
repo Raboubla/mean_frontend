@@ -22,17 +22,49 @@ export class AuthService {
   login(credentials: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
       tap((response: any) => {
-        if (response.token) {
-          // On décode le token pour récupérer les infos (email, role, id, etc.)
-          const decodedToken: any = jwtDecode(response.token);
-          this.saveToken(response.token);
-          this.saveRole(response.role);
-          this.saveId(decodedToken.id);
+
+        if (!response.token) {
+          throw new Error("Token manquant");
         }
+
+        // ❌ Si ce n'est pas ADMIN → erreur
+        if (response.role !== 'ADMIN') {
+          throw new Error("Erreur de profil");
+        }
+
+        // Si ADMIN
+        const decodedToken: any = jwtDecode(response.token);
+
+        this.saveToken(response.token);
+        this.saveRole(response.role);
+        this.saveId(decodedToken.id);
       })
     );
   }
 
+  // sign in
+  loginShop(credentials: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
+      tap((response: any) => {
+
+        if (!response.token) {
+          throw new Error("Token manquant");
+        }
+
+        // Si ce n'est pas SHOP_ADMIN → erreur
+        if (response.role !== 'SHOP_ADMIN') {
+          throw new Error("Erreur de profil");
+        }
+
+        // Si SHOP_ADMIN
+        const decodedToken: any = jwtDecode(response.token);
+
+        this.saveToken(response.token);
+        this.saveRole(response.role);
+        this.saveId(decodedToken.id);
+      })
+    );
+  }
   private saveToken(token: string) {
     localStorage.setItem('token', token);
   }

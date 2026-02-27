@@ -63,7 +63,7 @@ export class AppProductDialogComponent implements OnInit {
             price: [this.local_data.price || 0, [Validators.required, Validators.min(0)]],
             category: [this.local_data.category || 'OTHER', Validators.required],
             status: [this.local_data.status || 'AVAILABLE', Validators.required],
-            shop: [this.local_data.shop?._id || this.local_data.shop || '', Validators.required],
+            shop: [{ value: this.local_data.shop?._id || this.local_data.shop || '', disabled: this.local_data.isShopAdmin }, Validators.required],
             is_active: [this.local_data.is_active !== undefined ? this.local_data.is_active : true],
             // Promotion fields
             promo_discount_percent: [promotion.discount_percent || 0, [Validators.min(0), Validators.max(100)]],
@@ -145,7 +145,7 @@ export class AppProductDialogComponent implements OnInit {
 
     doAction() {
         if (this.productForm.valid) {
-            const formValue = this.productForm.value;
+            const formValue = this.productForm.getRawValue();
             this.errorMessage = '';
 
             const formData = new FormData();
