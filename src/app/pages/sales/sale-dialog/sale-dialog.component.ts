@@ -50,7 +50,7 @@ export class AppSaleDialogComponent implements OnInit {
 
         this.saleForm = this.fb.group({
             _id: [this.local_data._id],
-            shop: [this.local_data.shop?._id || this.local_data.shop || '', Validators.required],
+            shop: [{ value: this.local_data.shop?._id || this.local_data.shop || '', disabled: this.local_data.isShopAdmin }, Validators.required],
             product: [this.local_data.product?._id || this.local_data.product || '', Validators.required],
             quantity: [this.local_data.quantity || 1, [Validators.required, Validators.min(1)]],
             unit_price: [this.local_data.unit_price || 0, [Validators.required, Validators.min(0)]],

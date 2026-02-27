@@ -4,19 +4,19 @@
       <mat-card class="cardWithShadow boxed-auth">
         <mat-card-content class="p-32">
           <div class="text-center">
-            <p>Login raboubla/stephan ADMIN</p>
+            <p>Login raboubla/stephan Shop_admin</p>
           </div>
 
           <form class="m-t-30" [formGroup]="form" (ngSubmit)="submit()">
 
             <mat-label class="mat-subtitle-2 f-s-14 f-w-600 m-b-12 d-block">Email Address</mat-label>
             <mat-form-field appearance="outline" class="w-100" color="primary">
-              <input matInput type="email" formControlName="email" placeholder="admin@gmail.com" />
+              <input matInput type="email" formControlName="email" placeholder="bolo@gmail.com" />
             </mat-form-field>
 
             <mat-label class="mat-subtitle-2 f-s-14 f-w-600 m-b-12 d-block">Password</mat-label>
             <mat-form-field appearance="outline" class="w-100" color="primary">
-              <input matInput type="password" formControlName="password" placeholder="admin" />
+              <input matInput type="password" formControlName="password" placeholder="bolo" />
             </mat-form-field>
 
             <button type="submit" mat-flat-button color="primary" class="w-100" [disabled]="form.invalid">

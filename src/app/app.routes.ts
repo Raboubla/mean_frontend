@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { ClientComponent } from './layouts/client/client.component';
+import { ShopClientComponent } from './layouts/shopclient/shopclient.component';
 import { ClientHomeComponent } from './pages/client/home/home.component';
 import { authGuard } from './guards/auth.guard';
 import { ClientPromotionsComponent } from './pages/client/promotions/promotions.component';
@@ -117,6 +118,41 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'shop-admin',
+    component: ShopClientComponent,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/shopclient/pages-shops/pages-shops.component').then(
+            (m) => m.AppPagesShopsComponent
+          ),
+      },
+      {
+        path: 'products',
+        loadComponent: () =>
+          import('./pages/shopclient/products/products.component').then(
+            (m) => m.AppShopAdminProductsComponent
+          ),
+      },
+      {
+        path: 'sales',
+        loadComponent: () =>
+          import('./pages/shopclient/sales/sales.component').then(
+            (m) => m.AppShopAdminSalesComponent
+          ),
+      },
+      {
+        path: 'reviews',
+        loadComponent: () =>
+          import('./pages/shopclient/reviews/reviews.component').then(
+            (m) => m.AppShopAdminReviewsComponent
+          ),
+      },
+    ],
+  },
+  {
     path: '',
     component: BlankComponent,
     children: [
@@ -124,6 +160,13 @@ export const routes: Routes = [
         path: 'authentication',
         loadChildren: () =>
           import('./pages/authentication/authentication.routes').then(
+            (m) => m.AuthenticationRoutes
+          ),
+      },
+      {
+        path: 'shopclient/authentication',
+        loadChildren: () =>
+          import('./pages/shopclient/authentication/authentication-shop.routes').then(
             (m) => m.AuthenticationRoutes
           ),
       },

@@ -1,0 +1,126 @@
+<mat-card class="cardWithShadow" *ngIf="shopReady">
+    <mat-card-content>
+        <div class="row align-items-center m-b-4 g-2">
+            <!-- Search -->
+            <div class="col-lg-4 col-md-5">
+                <mat-form-field appearance="outline" class="w-100 hide-hint">
+                    <mat-label>Search My Products</mat-label>
+                    <input matInput [value]="searchQuery" (input)="onSearchInput($any($event.target).value)"
+                        placeholder="Name or description...">
+                    <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+            </div>
+            <!-- Category filter -->
+            <div class="col-lg-2 col-md-3">
+                <mat-form-field appearance="outline" class="w-100 hide-hint">
+                    <mat-label>Category</mat-label>
+                    <mat-select [(ngModel)]="selectedCategory" (selectionChange)="onCategoryChange()">
+                        <mat-option *ngFor="let c of categoryOptions" [value]="c.value">{{ c.label }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <!-- Spinner + Add button -->
+            <div class="col d-flex justify-content-end align-items-center gap-2">
+                <mat-spinner *ngIf="isLoading" diameter="22"></mat-spinner>
+                <button mat-flat-button color="primary" (click)="openDialog('Add', {})">Add Product</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table mat-table [dataSource]="dataSource" matSort class="w-100">
+
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14"> Name
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <div class="d-flex align-items-center">
+                            <div class="m-l-16">
+                                <h6 class="mat-subtitle-1 f-s-14 f-w-600">{{element.name}}</h6>
+                                <span class="f-s-12 text-muted">{{element.description | slice:0:30}}</span>
+                            </div>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Price Column -->
+                <ng-container matColumnDef="price">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14"> Price
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <ng-container *ngIf="isPromotionActive(element); else normalPrice">
+                            <div class="d-flex align-items-center">
+                                <span class="text-decoration-line-through text-muted f-s-12">{{element.price |
+                                    currency}}</span>
+                                <span class="text-error f-w-600 m-l-8">{{ getPromoPrice(element) | currency}}</span>
+                                <span class="bg-light-error text-error rounded f-w-600 p-4 f-s-10 m-l-4"
+                                    *ngIf="element.promotion?.discount_percent">
+                                    -{{element.promotion.discount_percent}}%
+                                </span>
+                            </div>
+                        </ng-container>
+                        <ng-template #normalPrice>
+                            {{element.price | currency}}
+                        </ng-template>
+                    </td>
+                </ng-container>
+
+                <!-- Category Column -->
+                <ng-container matColumnDef="category">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14">
+                        Category </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <span
+                            class="bg-light-accent text-accent rounded f-w-600 p-6 p-y-4 f-s-12">{{element.category}}</span>
+                    </td>
+                </ng-container>
+
+                <!-- Status Column -->
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14"> Status
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <span [ngClass]="{
+                            'bg-light-success text-success': element.status === 'AVAILABLE',
+                            'bg-light-error text-error': element.status === 'OUT_OF_STOCK' || element.status === 'DISCONTINUED',
+                            'bg-light-warning text-warning': element.status === 'PRE_ORDER'
+                        }" class="rounded f-w-600 p-6 p-y-4 f-s-12">
+                            {{element.status}}
+                        </span>
+                        <span *ngIf="!element.is_active"
+                            class="bg-light-error text-error rounded f-w-600 p-6 p-y-4 f-s-12 m-l-4">Inactive</span>
+                    </td>
+                </ng-container>
+
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14"> Actions </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <button mat-icon-button color="accent" (click)="openDialog('Update', element)"
+                            matTooltip="Edit">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deleteProduct(element)" matTooltip="Delete">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="toggleStatus(element)" matTooltip="Toggle Active Status">
+                            <mat-icon>{{element.is_active ? 'visibility' : 'visibility_off'}}</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of products">
+            </mat-paginator>
+        </div>
+    </mat-card-content>
+</mat-card>
+
+<div *ngIf="!shopReady && !isLoading" class="p-y-48 text-center text-muted">
+    <h2>No Shop Found</h2>
+    <p>Please configure your shop before managing products.</p>
+</div>

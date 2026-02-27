@@ -1,0 +1,106 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+
+        <!-- ── Filter bar ── -->
+        <div class="row align-items-center m-b-4 g-2">
+
+            <!-- Search -->
+            <div class="col-lg-5 col-md-6">
+                <mat-form-field appearance="outline" class="w-100 hide-hint">
+                    <mat-label>Search Sales</mat-label>
+                    <input matInput [value]="searchQuery" (input)="onSearchInput($any($event.target).value)"
+                        placeholder="Product name...">
+                    <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+            </div>
+
+            <!-- Spinner + Record button -->
+            <div class="col d-flex justify-content-end align-items-center gap-2">
+                <mat-spinner *ngIf="isLoading" diameter="22"></mat-spinner>
+                <button mat-flat-button color="primary" (click)="openDialog('Add', {})">Record Sale</button>
+            </div>
+        </div>
+
+        <!-- ── Table ── -->
+        <div class="table-responsive">
+            <table mat-table [dataSource]="dataSource" matSort class="w-100">
+
+                <!-- Product Column -->
+                <ng-container matColumnDef="product">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14">Product
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <div class="d-flex align-items-center">
+                            <div class="m-l-16">
+                                <h6 class="mat-subtitle-1 f-s-14 f-w-600 m-0">
+                                    {{element.product?.name || 'Unknown Product'}}
+                                </h6>
+                            </div>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Quantity Column -->
+                <ng-container matColumnDef="quantity">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14">Qty</th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">{{element.quantity}}</td>
+                </ng-container>
+
+                <!-- Unit Price Column -->
+                <ng-container matColumnDef="unit_price">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14">Unit
+                        Price</th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">{{element.unit_price | currency}}</td>
+                </ng-container>
+
+                <!-- Total Price Column -->
+                <ng-container matColumnDef="total_price">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14">Total
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <span class="bg-light-primary text-primary rounded f-w-600 p-6 p-y-4 f-s-12">
+                            {{element.total_price | currency}}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <!-- Date Column -->
+                <ng-container matColumnDef="sold_at">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14">Date
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">{{element.sold_at | date:'short'}}</td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">Actions</th>
+                    <td mat-cell *matCellDef="let element" class="mat-body-1">
+                        <button mat-icon-button color="accent" (click)="openDialog('Update', element)"
+                            matTooltip="Edit">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deleteSale(element)" matTooltip="Delete">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                <!-- Empty state -->
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell text-center p-y-24 text-muted" [attr.colspan]="displayedColumns.length">
+                        <mat-icon class="d-block m-auto m-b-8" style="font-size:36px;height:36px;width:36px;">
+                            point_of_sale
+                        </mat-icon>
+                        No sales match the current filters.
+                    </td>
+                </tr>
+            </table>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of sales">
+            </mat-paginator>
+        </div>
+    </mat-card-content>
+</mat-card>
