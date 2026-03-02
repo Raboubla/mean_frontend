@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { ClientHeaderComponent } from './header/header.component';
 import { CommonModule } from '@angular/common';
 import { ClientFooterComponent } from './footer/footer.component';
+import { AppWhatsappWidgetComponent } from '../../components/whatsapp-widget/whatsapp-widget.component';
 
 @Component({
     selector: 'app-client-layout',
@@ -11,7 +12,8 @@ import { ClientFooterComponent } from './footer/footer.component';
         RouterModule,
         ClientHeaderComponent,
         ClientFooterComponent,
-        CommonModule
+        CommonModule,
+        AppWhatsappWidgetComponent
     ],
     templateUrl: './client.component.html',
 })
