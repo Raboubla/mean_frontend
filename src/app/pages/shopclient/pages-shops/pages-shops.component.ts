@@ -7,7 +7,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { ShopService, Shop } from '../../../services/shop-services/shop.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AppShopDialogComponent } from '../../shops/shop-dialog/shop-dialog.component';
-
+import { environment } from 'src/environments/environment';
 @Component({
     selector: 'app-pages-shops',
     standalone: true,
@@ -62,8 +62,19 @@ export class AppPagesShopsComponent implements OnInit {
         });
     }
 
+
     getBannerUrl(shop: Shop): string {
-        return shop.banner_url ? `http://localhost:5000${shop.banner_url}` : '';
+        if (!shop.banner_url) return '';
+
+        // Si l'URL est déjà complète (commence par http), on la retourne telle quelle
+        if (shop.banner_url.startsWith('http')) {
+            return shop.banner_url;
+        }
+
+        // Sinon, on construit l'URL en utilisant l'apiUrl de l'environment
+        // On enlève '/api' de la fin de l'apiUrl pour pointer vers la racine du serveur
+        const baseUrl = environment.apiUrl.replace('/api', '');
+        return `${baseUrl}${shop.banner_url}`;
     }
 
     extractDominantColor(imageUrl: string) {
